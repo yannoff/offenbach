@@ -1,0 +1,40 @@
+#!/bin/bash
+
+MARKDOWN_DIR=md
+MANPAGES_DIR=man
+MANPAGES_SECTION=1
+MD_CONVERTER_BIN=go-md2man
+
+MANPAGE_NAME=$(basename $(dirname `realpath $0`))
+
+_printf(){
+    printf "${@}" >&2
+}
+
+# Check for go-md2man
+which $MD_CONVERTER_BIN > /dev/null
+if [ "$?" != "0" ]
+then
+    _printf "\033[01;35mError: you need \033[00m%s\033[01;35m to generate documentation, exiting now.\033[00m\n" $MD_CONVERTER_BIN
+    _printf "On ubuntu, use \n\033[01;37m%s %s\033[00m \ncommand to install it.\n" "sudo apt-get install" $MD_CONVERTER_BIN
+    exit 1
+fi
+
+_printf "Iterating over %s/ directory to find markdown files...\n" $MARKDOWN_DIR
+for f in $MARKDOWN_DIR/*.md
+do 
+    MANPAGES_SECTION=`basename $f .md`
+    OUTPUT_DIR="$MANPAGES_DIR/man${MANPAGES_SECTION}"
+    if [ ! -d "${OUTPUT_DIR}" ]
+    then
+        _printf "Creating \033[01;32m%s\033[00m dir..." ${OUTPUT_DIR}
+        mkdir -p ${OUTPUT_DIR} >/dev/null 2>&1
+        [ "$?" -eq "0" ] && _printf "\033[01;32m%s\033[00m" "OK"
+        echo
+    fi
+
+    _printf " - Executing \033[01;37m%s --in %s/index.md --out %s/man%s/%s.%s.gz\033[00m " $MD_CONVERTER_BIN $f $MANPAGES_DIR ${MANPAGES_SECTION} ${MANPAGE_NAME} ${MANPAGES_SECTION}
+    $MD_CONVERTER_BIN --in $f --out /dev/stdout | gzip > $MANPAGES_DIR/man${MANPAGES_SECTION}/${MANPAGE_NAME}.${MANPAGES_SECTION}.gz
+    [ "$?" -eq "0" ] && _printf "\033[01;32m%s\033[00m\n" "OK"
+done
+_printf "Done generating manpages.\n"

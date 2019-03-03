@@ -1,0 +1,13 @@
+#!/bin/bash
+bindir=$1
+
+echo -n "-- checking wether yamltools are installed... " >&2
+
+if [ -n "`which yamltools`" ]
+then
+    echo "yes" >&2
+else
+    printf "no\n%s\n" "+ including download task in Makefile." >&2
+    printf "\tcurl -o %s/yamltools https://raw.githubusercontent.com/yannoff/yamltools/master/bin/yamltools\n" ${bindir} >&1
+    printf "\tchmod +x %s/yamltools\n" ${bindir} >&1
+fi

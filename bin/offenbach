@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# The Offenbach Project
+# (c) 2019 Yannoff (MIT)
+# @see https://github.com/yannoff/offenbach
+#
+OFF_NAME=Offenbach
+OFF_VERS=1.0.0
+
+CONSOLE=yamltools
+COMPBIN=composer
+
+debug(){
+    [ -n "$verbosity" ] || return 0
+    local msg=$1
+    shift 1
+    set -- "[offenbach] $msg\n" "$@"
+    printf "$@" >&2
+}
+
+# Parse command line arguments,
+# some commands don't need to load composer.json & composer.lock files
+for arg; do
+    case "$arg" in
+        -v|-vv|-vvv)
+            verbosity="-v";
+            ;;
+        --version)
+            printf "\033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${OFF_NAME} ${OFF_VERS}
+            $COMPBIN --version
+            exit $?
+            ;;
+        --help|about|help|list|search|selfupdate|self-update)
+            $COMPBIN "$@"
+            exit $?
+            ;;
+    esac
+done
+
+# Fetch alternative composer.json name set from environment, if any
+environment_composer=`printenv COMPOSER`
+
+# Generate random name for the temporary json & lock files
+temporary_composer=`php -r 'echo uniqid("offenbach.") . ".json";'`
+temporary_lockfile=`basename $temporary_composer .json`.lock
+
+# Default names used by offenbach
+yaml_file=composer.yaml
+lock_file=composer-lock.yaml
+
+# Default names used by composer
+default_composer=composer.json
+default_lockfile=composer.lock
+
+if [ -f "${yaml_file}" ]
+then
+    debug "Found a ${yaml_file} file. Converting to JSON..."
+    [ -f $yaml_file ] && debug "$($CONSOLE convert:yaml:json ${verbosity} ${yaml_file} $temporary_composer)"
+    [ -f $lock_file ] && debug "$($CONSOLE convert:yaml:json ${verbosity} ${lock_file} $temporary_lockfile)"
+    echo
+elif [ -n "$environment_composer" -a -f "$environment_composer" ]
+then
+    debug "Found a COMPOSER env variable set... Fetching content"
+    environment_lockfile=`basename $environment_composer .json`.lock
+    [ -f $environment_composer ] && debug "$(cp -v $environment_composer $temporary_composer)"
+    [ -f $environment_lockfile ] && debug "$(cp -v $environment_lockfile $temporary_lockfile)"
+elif [ -f "composer.json" ]
+then
+    debug "Found a composer.json file. Copying to $temporary_composer"
+    [ -f $default_composer ] && debug "$(cp -v $default_composer $temporary_composer)"
+    [ -f $default_lockfile ] && debug "$(cp -v $default_lockfile $temporary_lockfile)"
+else
+    debug "No composer.json nor $yaml_file file found here."
+fi
+
+env COMPOSER=$temporary_composer $COMPBIN "$@"
+
+[ -f $temporary_composer ] && debug "$($CONSOLE convert:json:yaml ${verbosity} $temporary_composer ${yaml_file})" && debug "$(rm -v $temporary_composer)"
+[ -f $temporary_lockfile ] && debug "$($CONSOLE convert:json:yaml ${verbosity} $temporary_lockfile ${lock_file})" && debug "$(rm -v $temporary_lockfile)"
+echo

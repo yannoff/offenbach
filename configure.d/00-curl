@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo -n "-- checking wether CURL is installed... " >&2
+
+if [ -n "`which curl`" ]
+then
+    echo "yes" >&2
+else
+    printf "no\n\n  %s\n\n" "Error: \"cURL\" not found, please install it to proceed." >&2
+    exit 1
+fi

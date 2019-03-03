@@ -1,0 +1,114 @@
+#!/bin/bash
+#
+# Configure script
+#
+
+vars=( prefix bindir mandir )
+files=()
+
+# Default value for prefix dir
+prefix=/usr
+
+usage() {
+    if [ $# -gt 0 ]
+    then
+        echo
+        printf "$@"
+        echo
+    fi
+    cat >&2 <<EOH
+
+    Usage: 
+        
+        $0 [--prefix=<prefix>] [--bindir=<bindir>] [--mandir=<mandir>] file1 [...file2 [file3]]
+
+        $0 [--prefix=<prefix>] [--bindir=<bindir>] [--mandir=<mandir>] --list list-file
+
+    Options:
+
+        --help, -h Display this help and exit
+        --prefix   The prefix dir (defaults to $prefix)
+        --bindir   The binary install dir (defaults to \$PREFIX/bin)
+        --mandir   The manual install dir (defaults to \$PREFIX/share/man)
+
+        --list     Read the list of files to include from the given file instead of command arguments
+EOH
+}
+
+while [ $# -gt 0 ]
+do
+    case $1 in
+        --help|-h|--usage)
+            usage
+            exit 0
+            ;;
+        --prefix)
+            prefix=$2
+            shift 2
+            ;;
+        --bindir)
+            bindir=$2;
+            shift 2
+            ;;
+        --mandir)
+            mandir=$2;
+            shift 2
+            ;;
+        --list)
+            files=(`xargs --arg-file=$2`)
+            shift 2
+            ;;
+        --*)
+            printf '\nUnrecognized option "%s", ignoring.\n' $1
+            shift
+            ;;
+        *)
+            files+=( $1 )
+            shift
+            ;;
+    esac
+done
+
+if [ ${#files[*]} -eq 0 ]
+then
+    usage "%s\n%s\n%s" "Cannot establish the list of files to copy." \
+        "Please provide them either as command-line arguments," \
+        "either via a list file."
+    exit 1
+fi
+
+[ -z "$bindir" ] && bindir=${prefix}/bin
+[ -z "$mandir" ] && mandir=${prefix}/share/man
+
+printf "\n\033[01;32mConfigured variables:\033[00m\n---------------------\n"
+for v in ${vars[@]}
+do
+    printf "%s: %s\n" $v ${!v}
+done
+
+# Build included files list
+printf "\n\033[01;32mFiles to be included:\033[00m\n---------------------\n"
+copy=
+for f in ${files[@]}
+do
+    copy=${copy}`printf "\tcp -v %s %s\n" $f $bindir`
+    printf "+ copy: %s\n" $f
+done
+
+echo
+
+# Build Makefile upon variables using heredoc
+cat > Makefile <<EOT
+# vim: set noexpandtab
+all:
+	echo "Everything OK. Run: make install"
+
+install:
+$copy
+EOT
+
+# Run parts if found
+printf "\n\033[01;32mRequirement checks:\033[00m\n---------------------\n"
+[ -d configure.d/ ] && run-parts --arg=${bindir} configure.d 1>>Makefile
+
+printf "\n\033[01;32mGenerated\033[00m Makefile.\n\n"

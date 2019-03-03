@@ -1,0 +1,20 @@
+#!/bin/bash
+
+MANPAGES_DIR=man
+
+if [ "`id -u`" != "0" ]
+then
+    printf "\033[01;35mError: you must run this script as root.\033[00m\n"
+    printf "On ubuntu, use \n\033[01;37m%s %s\033[00m \ncommand.\n" "sudo" $0
+    exit 1
+fi
+
+printf "Iterating over %s/ directory to find manpages files...\n" $MANPAGES_DIR
+for f in $(find $MANPAGES_DIR/ -type f)
+do 
+    printf " - Copying \033[01;37m%s\033[00m...\n" $f
+    printf "\033[01;30m"
+    cp -v $f /usr/share/$f
+    printf "\033[00m" 
+done
+printf "Done installing manpages.\n"
