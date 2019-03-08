@@ -10,7 +10,12 @@ OFF_VERS=1.0.0
 CONSOLE=yamltools
 COMPBIN=composer
 
-debug(){
+#
+# If verbosity is set, print formatted message preprended with app name
+# @param $message  The formatted debug message to print
+# @param $v1...$vn The formatting values
+#
+_debug(){
     [ -n "$verbosity" ] || return 0
     local msg=$1
     shift 1
@@ -18,16 +23,71 @@ debug(){
     printf "$@" >&2
 }
 
+#
+# Execute given command with debbugging and return command status
+# @param $command The command to execute
+#
+_exec(){
+    local cmd=$1 output status o
+    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "$cmd"
+    output="$(${cmd} 2>&1)"
+    status=$?
+    _debug "${output}"
+    return $status
+}
+
+#
+# Copy source file to destination file
+# @param $source The source file
+# @param $target The destination file
+#
+_copy(){
+    local src=$1 dest=$2
+    [ -f ${src} ] && _exec "cp -v ${src} ${dest}"
+    return $?
+}
+
+#
+# Convert YAML source file to JSON target file
+# @param $source The YAML source file
+# @param $target The JSON destination file
+#
+_yaml2json(){
+    local yamlfile=$1 jsonfile=$2
+    [ -f ${yamlfile} ] && _exec "$CONSOLE convert:yaml:json ${verbosity} ${yamlfile} ${jsonfile}"
+    return $?
+}
+
+#
+# Convert JSON source file to YAML target file
+# @param $source The JSON source file
+# @param $target The YAML destination file
+#
+_json2yaml(){
+    local jsonfile=$1 yamlfile=$2
+    [ -f ${jsonfile} ] && _exec "$CONSOLE convert:json:yaml ${verbosity} ${jsonfile} ${yamlfile}"
+    return $?
+}
+
+#
+# Remove the given file
+# @param $file Path to the file to be removed
+#
+_remove(){
+    local file=$1
+    _exec "rm -fv $file"
+}
+
 # Parse command line arguments,
 # some commands don't need to load composer.json & composer.lock files
 for arg; do
     case "$arg" in
         -v|-vv|-vvv)
-            verbosity="-v";
+            verbosity=$arg;
             ;;
         --version)
-            printf "\033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${OFF_NAME} ${OFF_VERS}
             $COMPBIN --version
+            printf "Super Powered by \033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${OFF_NAME} ${OFF_VERS}
             exit $?
             ;;
         --help|about|help|list|search|selfupdate|self-update)
@@ -42,7 +102,7 @@ environment_composer=`printenv COMPOSER`
 
 # Generate random name for the temporary json & lock files
 temporary_composer=`php -r 'echo uniqid("offenbach.") . ".json";'`
-temporary_lockfile=`basename $temporary_composer .json`.lock
+temporary_lockfile=`basename ${temporary_composer} .json`.lock
 
 # Default names used by offenbach
 yaml_file=composer.yaml
@@ -52,29 +112,36 @@ lock_file=composer-lock.yaml
 default_composer=composer.json
 default_lockfile=composer.lock
 
+# Assess the situation and decide what to do:
+# - if a composer.yaml file is found, offenbach has been run at least once on the project
+# => convert both dependency and lock (if exists) files to their temporary JSON alter ego
+# - if an alternative filename is set via COMPOSER env variable and the file exists
+# OR
+# - if a composer.json file is found and there was no composer.yaml, assume offenbach is run for the first time
+# => copy dependency and lock file to their temporary versions
 if [ -f "${yaml_file}" ]
 then
-    debug "Found a ${yaml_file} file. Converting to JSON..."
-    [ -f $yaml_file ] && debug "$($CONSOLE convert:yaml:json ${verbosity} ${yaml_file} $temporary_composer)"
-    [ -f $lock_file ] && debug "$($CONSOLE convert:yaml:json ${verbosity} ${lock_file} $temporary_lockfile)"
-    echo
-elif [ -n "$environment_composer" -a -f "$environment_composer" ]
+    _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
+    _yaml2json ${yaml_file} ${temporary_composer}
+    _yaml2json ${lock_file} ${temporary_lockfile}
+elif [ -n "${environment_composer}" -a -f "${environment_composer}" ]
 then
-    debug "Found a COMPOSER env variable set... Fetching content"
-    environment_lockfile=`basename $environment_composer .json`.lock
-    [ -f $environment_composer ] && debug "$(cp -v $environment_composer $temporary_composer)"
-    [ -f $environment_lockfile ] && debug "$(cp -v $environment_lockfile $temporary_lockfile)"
-elif [ -f "composer.json" ]
+    _debug "Found a COMPOSER env variable set... Fetching content"
+    environment_lockfile=`basename ${environment_composer} .json`.lock
+    _copy ${environment_composer} ${temporary_composer}
+    _copy ${environment_lockfile} ${temporary_lockfile}
+elif [ -f "${default_composer}" ]
 then
-    debug "Found a composer.json file. Copying to $temporary_composer"
-    [ -f $default_composer ] && debug "$(cp -v $default_composer $temporary_composer)"
-    [ -f $default_lockfile ] && debug "$(cp -v $default_lockfile $temporary_lockfile)"
+    _debug "Found a \033[01m%s\033[00m file. Copying to: \033[01m%s\033[00m." "${default_composer}" "${temporary_composer}"
+    _copy ${default_composer} ${temporary_composer}
+    _copy ${default_lockfile} ${temporary_lockfile}
 else
-    debug "No composer.json nor $yaml_file file found here."
+    _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${default_composer}" "${yaml_file}"
 fi
 
-env COMPOSER=$temporary_composer $COMPBIN "$@"
+# Execute composer in a secluded environment, setting COMPOSER env variable to the temporary JSON filename
+env COMPOSER=${temporary_composer} $COMPBIN "$@"
 
-[ -f $temporary_composer ] && debug "$($CONSOLE convert:json:yaml ${verbosity} $temporary_composer ${yaml_file})" && debug "$(rm -v $temporary_composer)"
-[ -f $temporary_lockfile ] && debug "$($CONSOLE convert:json:yaml ${verbosity} $temporary_lockfile ${lock_file})" && debug "$(rm -v $temporary_lockfile)"
-echo
+# Convert updated JSON content back to YAML and remove the temporary files
+_json2yaml ${temporary_composer} ${yaml_file} && _remove ${temporary_composer}
+_json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
