@@ -70,6 +70,17 @@ _json2yaml(){
 }
 
 #
+# Restore comments from the original YAML to the new generated one
+# @param $source The original YAML file with comments
+# @param $target The fresh YAML file without comments
+#
+_restore(){
+    local original=$1 newfile=$2
+    _exec "$CONSOLE yaml:comments:merge -w ${original} ${newfile}"
+    return $?
+}
+
+#
 # Remove the given file
 # @param $file Path to the file to be removed
 #
@@ -106,6 +117,7 @@ temporary_lockfile=`basename ${temporary_composer} .json`.lock
 
 # Default names used by offenbach
 yaml_file=composer.yaml
+yaml_orig=composer.orig.yaml
 lock_file=composer-lock.yaml
 
 # Default names used by composer
@@ -122,6 +134,7 @@ default_lockfile=composer.lock
 if [ -f "${yaml_file}" ]
 then
     _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
+    _copy ${yaml_file} ${yaml_orig}
     _yaml2json ${yaml_file} ${temporary_composer}
     _yaml2json ${lock_file} ${temporary_lockfile}
 elif [ -n "${environment_composer}" -a -f "${environment_composer}" ]
@@ -145,3 +158,6 @@ env COMPOSER=${temporary_composer} $COMPBIN "$@"
 # Convert updated JSON content back to YAML and remove the temporary files
 _json2yaml ${temporary_composer} ${yaml_file} && _remove ${temporary_composer}
 _json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
+
+# Restore comments into the fresh generated composer.yaml then remove the original file
+_restore   ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
