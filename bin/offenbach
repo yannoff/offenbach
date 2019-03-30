@@ -5,7 +5,7 @@
 # @see https://github.com/yannoff/offenbach
 #
 OFF_NAME=Offenbach
-OFF_VERS=1.0.0
+OFF_VERS=1.1.1
 
 CONSOLE=yamltools
 COMPBIN=composer
@@ -76,7 +76,7 @@ _json2yaml(){
 #
 _restore(){
     local original=$1 newfile=$2
-    _exec "$CONSOLE yaml:comments:merge -w ${original} ${newfile}"
+    [ -f ${original} ] && _exec "$CONSOLE yaml:comments:merge -w ${original} ${newfile}"
     return $?
 }
 
