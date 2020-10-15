@@ -4,11 +4,11 @@
 # (c) 2019 Yannoff (MIT)
 # @see https://github.com/yannoff/offenbach
 #
-OFF_NAME=Offenbach
-OFF_VERS=@@version@@
+offenbach_name=Offenbach
+offenbach_version=@@version@@
 
-CONSOLE=yamltools
-COMPBIN=composer
+yamltools=yamltools
+composer=composer
 
 #
 # If verbosity is set, print formatted message preprended with app name
@@ -16,10 +16,10 @@ COMPBIN=composer
 # @param $v1...$vn The formatting values
 #
 _debug(){
-    [ -n "$verbosity" ] || return 0
+    [ -n "${verbosity}" ] || return 0
     local msg=$1
     shift 1
-    set -- "[offenbach] $msg\n" "$@"
+    set -- "[offenbach] ${msg}\n" "$@"
     printf "$@" >&2
 }
 
@@ -29,11 +29,11 @@ _debug(){
 #
 _exec(){
     local cmd=$1 output status o
-    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "$cmd"
+    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "${cmd}"
     output="$(${cmd} 2>&1)"
     status=$?
     _debug "${output}"
-    return $status
+    return ${status}
 }
 
 #
@@ -54,7 +54,7 @@ _copy(){
 #
 _yaml2json(){
     local yamlfile=$1 jsonfile=$2
-    [ -f ${yamlfile} ] && _exec "$CONSOLE convert:yaml:json ${verbosity} ${yamlfile} ${jsonfile}"
+    [ -f ${yamlfile} ] && _exec "${yamltools} convert:yaml:json ${verbosity} ${yamlfile} ${jsonfile}"
     return $?
 }
 
@@ -65,7 +65,7 @@ _yaml2json(){
 #
 _json2yaml(){
     local jsonfile=$1 yamlfile=$2
-    [ -f ${jsonfile} ] && _exec "$CONSOLE convert:json:yaml ${verbosity} ${jsonfile} ${yamlfile}"
+    [ -f ${jsonfile} ] && _exec "${yamltools} convert:json:yaml ${verbosity} ${jsonfile} ${yamlfile}"
     return $?
 }
 
@@ -76,7 +76,7 @@ _json2yaml(){
 #
 _restore(){
     local original=$1 newfile=$2
-    [ -f ${original} ] && _exec "$CONSOLE yaml:comments:merge -w ${original} ${newfile}"
+    [ -f ${original} ] && _exec "${yamltools} yaml:comments:merge -w ${original} ${newfile}"
     return $?
 }
 
@@ -86,23 +86,23 @@ _restore(){
 #
 _remove(){
     local file=$1
-    _exec "rm -fv $file"
+    _exec "rm -fv ${file}"
 }
 
 # Parse command line arguments,
 # some commands don't need to load composer.json & composer.lock files
 for arg; do
-    case "$arg" in
+    case "${arg}" in
         -v|-vv|-vvv)
-            verbosity=$arg;
+            verbosity=${arg};
             ;;
         --version)
-            $COMPBIN --version
-            printf "Super Powered by \033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${OFF_NAME} ${OFF_VERS}
+            ${composer} --version
+            printf "Super Powered by \033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${offenbach_name} ${offenbach_version}
             exit $?
             ;;
         --help|about|help|list|search|selfupdate|self-update)
-            $COMPBIN "$@"
+            ${composer} "$@"
             exit $?
             ;;
     esac
@@ -153,7 +153,7 @@ else
 fi
 
 # Execute composer in a secluded environment, setting COMPOSER env variable to the temporary JSON filename
-env COMPOSER=${temporary_composer} $COMPBIN "$@"
+env COMPOSER=${temporary_composer} ${composer} "$@"
 
 # Convert updated JSON content back to YAML and remove the temporary files
 _json2yaml ${temporary_composer} ${yaml_file} && _remove ${temporary_composer}
