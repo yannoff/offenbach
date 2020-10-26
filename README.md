@@ -9,7 +9,7 @@ _Boost your [composer](https://getcomposer.org/) with YAML support!_
 ## Install
 
 1. Clone or fetch a zipball from this repository
-2. Run `configure bin/offenbach`
+2. Run `./configure bin/offenbach`
 3. Run `make`
 4. Run `sudo make install`
 
