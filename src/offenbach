@@ -5,6 +5,7 @@
 # @see https://github.com/yannoff/offenbach
 #
 offenbach_name=Offenbach
+offenbach_url=https://github.com/yannoff/offenbach
 offenbach_version=@@version@@
 
 yamltools=yamltools
@@ -89,6 +90,23 @@ _remove(){
     _exec "rm -fv ${file}"
 }
 
+#
+# Prepend offenbach header note to the given file
+# @param $file Path to the target file
+#
+_add_header(){
+    local yaml file=$1
+    yaml=$(cat ${file})
+    cat > ${file} <<-EOS
+#
+# This file was generated automatically by ${offenbach_name}
+# @see ${offenbach_url} for details
+#
+${yaml}
+EOS
+}
+
+
 # Parse command line arguments,
 # some commands don't need to load composer.json & composer.lock files
 for arg; do
@@ -131,9 +149,11 @@ default_lockfile=composer.lock
 # OR
 # - if a composer.json file is found and there was no composer.yaml, assume offenbach is run for the first time
 # => copy dependency and lock file to their temporary versions
+first_run=yes
 if [ -f "${yaml_file}" ]
 then
     _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
+    first_run=
     _copy ${yaml_file} ${yaml_orig}
     _yaml2json ${yaml_file} ${temporary_composer}
     _yaml2json ${lock_file} ${temporary_lockfile}
@@ -158,6 +178,13 @@ env COMPOSER=${temporary_composer} ${composer} "$@"
 # Convert updated JSON content back to YAML and remove the temporary files
 _json2yaml ${temporary_composer} ${yaml_file} && _remove ${temporary_composer}
 _json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
+
+# Add offenbach header note, if appropriate
+if [ -n "${first_run}" ]
+then
+    _add_header ${yaml_file}
+    _add_header ${lock_file}
+fi
 
 # Restore comments into the fresh generated composer.yaml then remove the original file
 _restore ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
