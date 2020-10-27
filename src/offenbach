@@ -54,7 +54,7 @@ _copy(){
 #
 _yaml2json(){
     local yamlfile=$1 jsonfile=$2
-    [ -f ${yamlfile} ] && _exec "${yamltools} convert:yaml:json ${verbosity} ${yamlfile} ${jsonfile}"
+    [ -f ${yamlfile} ] && _exec "${yamltools} convert:yaml:json ${yamlfile} ${jsonfile}"
     return $?
 }
 
@@ -65,7 +65,7 @@ _yaml2json(){
 #
 _json2yaml(){
     local jsonfile=$1 yamlfile=$2
-    [ -f ${jsonfile} ] && _exec "${yamltools} convert:json:yaml ${verbosity} ${jsonfile} ${yamlfile}"
+    [ -f ${jsonfile} ] && _exec "${yamltools} convert:json:yaml ${jsonfile} ${yamlfile}"
     return $?
 }
 
@@ -160,4 +160,4 @@ _json2yaml ${temporary_composer} ${yaml_file} && _remove ${temporary_composer}
 _json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
 
 # Restore comments into the fresh generated composer.yaml then remove the original file
-_restore   ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
+_restore ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
