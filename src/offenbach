@@ -92,10 +92,12 @@ _remove(){
 
 #
 # Prepend offenbach header note to the given file
+# (if the file does not exist, exit nicely)
 # @param $file Path to the target file
 #
 _add_header(){
     local yaml file=$1
+    [ -f ${file} ] || return 0
     yaml=$(cat ${file})
     cat > ${file} <<-EOS
 #
@@ -183,8 +185,8 @@ _json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
 if [ -n "${first_run}" ]
 then
     _add_header ${yaml_file}
-    _add_header ${lock_file}
 fi
+_add_header ${lock_file}
 
 # Restore comments into the fresh generated composer.yaml then remove the original file
 _restore ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
