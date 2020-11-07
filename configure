@@ -1,6 +1,19 @@
 #!/bin/bash
 #
-# Configure script
+# This file is part of the Offenbach Project
+#
+# (c) 2019-2020 Yannoff (https://github.com/yannoff)
+#
+# @project  Offenbach
+# @author   Yannoff (https://github.com/yannoff)
+# @link     https://github.com/yannoff/offenbach
+# @license  http://opensource.org/licenses/MIT
+#
+# For the full copyright and license information,
+# please view the LICENSE file bundled with this
+# software sources.
+#
+# Installation configure script
 #
 
 vars=( prefix bindir mandir )
@@ -38,6 +51,14 @@ EOH
 while [ $# -gt 0 ]
 do
     case $1 in
+        # Support passing options in the --option=value form
+        --*=*)
+            arg=$1
+            option=${arg%%=*}
+            value=${arg##*=}
+            shift 1
+            set -- ${option} ${value} $@
+            ;;
         --help|-h|--usage)
             usage
             exit 0
@@ -86,26 +107,22 @@ do
     printf "%s: %s\n" $v ${!v}
 done
 
-# Build included files list
-printf "\n\033[01;32mFiles to be included:\033[00m\n---------------------\n"
-copy=
-for f in ${files[@]}
-do
-    copy=${copy}`printf "\tcp -v %s %s\n" $f $bindir`
-    printf "+ copy: %s\n" $f
-done
-
-echo
-
-# Build Makefile upon variables using heredoc
+# Build Makefile base using heredoc
 cat > Makefile <<EOT
 # vim: set noexpandtab
 all:
 	echo "Everything OK. Run: sudo make install"
 
 install:
-$copy
 EOT
+
+# Build included files list
+printf "\n\033[01;32mFiles to be included:\033[00m\n---------------------\n"
+for f in "${files[@]}"
+do
+    printf "\tcp -v %s %s\n" $f $bindir 1>>Makefile
+    printf "+ copy: %s\n" $f
+done
 
 # Run parts if found
 printf "\n\033[01;32mRequirement checks:\033[00m\n---------------------\n"

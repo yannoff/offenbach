@@ -1,4 +1,21 @@
 #!/bin/bash
+#
+# This file is part of the Offenbach Project
+#
+# (c) 2019-2020 Yannoff (https://github.com/yannoff)
+#
+# @project  Offenbach
+# @author   Yannoff (https://github.com/yannoff)
+# @link     https://github.com/yannoff/offenbach
+# @license  http://opensource.org/licenses/MIT
+#
+# For the full copyright and license information,
+# please view the LICENSE file bundled with this
+# software sources.
+#
+# For internal use only
+#
+
 bindir=$1
 
 echo -n "-- checking wether yamltools are installed... " >&2
