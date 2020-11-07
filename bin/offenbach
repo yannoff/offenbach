@@ -1,12 +1,23 @@
 #!/bin/bash
 #
-# The Offenbach Project
-# (c) 2019 Yannoff (MIT)
-# @see https://github.com/yannoff/offenbach
+# This file is part of the Offenbach Project
 #
+# (c) 2019-2020 Yannoff (https://github.com/yannoff)
+#
+# @project  Offenbach
+# @author   Yannoff (https://github.com/yannoff)
+# @link     https://github.com/yannoff/offenbach
+# @license  http://opensource.org/licenses/MIT
+#
+# For the full copyright and license information,
+# please view the LICENSE file bundled with this
+# software sources.
+#
+
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_version=1.1.0
+offenbach_build_version=1.1.1
+offenbach_build_date=2020-11-07T20:39:05+01:00
 
 yamltools=yamltools
 composer=composer
@@ -92,10 +103,12 @@ _remove(){
 
 #
 # Prepend offenbach header note to the given file
+# (if the file does not exist, exit nicely)
 # @param $file Path to the target file
 #
 _add_header(){
     local yaml file=$1
+    [ -f ${file} ] || return 0
     yaml=$(cat ${file})
     cat > ${file} <<-EOS
 #
@@ -114,12 +127,17 @@ for arg; do
         -v|-vv|-vvv)
             verbosity=${arg};
             ;;
-        --version)
-            ${composer} --version
-            printf "Super Powered by \033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${offenbach_name} ${offenbach_version}
+        about)
+            printf "\033[01m%s\033[00m - \033[01m%s\033[00m\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
+            ${composer} "$@"
             exit $?
             ;;
-        --help|about|help|list|search|selfupdate|self-update)
+        --version|list)
+            printf "\033[01m%s\033[00m version \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
+            ${composer} "$@"
+            exit $?
+            ;;
+        --help|help|search|selfupdate|self-update)
             ${composer} "$@"
             exit $?
             ;;
@@ -183,8 +201,8 @@ _json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
 if [ -n "${first_run}" ]
 then
     _add_header ${yaml_file}
-    _add_header ${lock_file}
 fi
+_add_header ${lock_file}
 
 # Restore comments into the fresh generated composer.yaml then remove the original file
 _restore ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
