@@ -1,12 +1,23 @@
 #!/bin/bash
 #
-# The Offenbach Project
-# (c) 2019 Yannoff (MIT)
-# @see https://github.com/yannoff/offenbach
+# This file is part of the Offenbach Project
 #
+# (c) 2019-2020 Yannoff (https://github.com/yannoff)
+#
+# @project  Offenbach
+# @author   Yannoff (https://github.com/yannoff)
+# @link     https://github.com/yannoff/offenbach
+# @license  http://opensource.org/licenses/MIT
+#
+# For the full copyright and license information,
+# please view the LICENSE file bundled with this
+# software sources.
+#
+
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_version=@@version@@
+offenbach_build_version=@@version@@
+offenbach_build_date=@@date@@
 
 yamltools=yamltools
 composer=composer
@@ -116,12 +127,17 @@ for arg; do
         -v|-vv|-vvv)
             verbosity=${arg};
             ;;
-        --version)
-            ${composer} --version
-            printf "Super Powered by \033[00;32m%s\033[00m version \033[00;33m%s\033[00m\n" ${offenbach_name} ${offenbach_version}
+        about)
+            printf "\033[01m%s\033[00m - \033[01m%s\033[00m\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
+            ${composer} "$@"
             exit $?
             ;;
-        --help|about|help|list|search|selfupdate|self-update)
+        --version|list)
+            printf "\033[01m%s\033[00m version \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
+            ${composer} "$@"
+            exit $?
+            ;;
+        --help|help|search|selfupdate|self-update)
             ${composer} "$@"
             exit $?
             ;;
