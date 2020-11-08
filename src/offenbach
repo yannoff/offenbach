@@ -93,12 +93,13 @@ _restore(){
 }
 
 #
-# Remove the given file
+# Remove the given file, if it exists
 # @param $file Path to the file to be removed
 #
 _remove(){
     local file=$1
-    _exec "rm -fv ${file}"
+    [ -f ${file} ] && _exec "rm -fv ${file}"
+    return $?
 }
 
 #
@@ -179,11 +180,15 @@ elif [ -n "${environment_composer}" -a -f "${environment_composer}" ]
 then
     _debug "Found a COMPOSER env variable set... Fetching content"
     environment_lockfile=`basename ${environment_composer} .json`.lock
+    initial_composer=${environment_composer}
+    initial_lockfile=${environment_lockfile}
     _copy ${environment_composer} ${temporary_composer}
     _copy ${environment_lockfile} ${temporary_lockfile}
 elif [ -f "${default_composer}" ]
 then
     _debug "Found a \033[01m%s\033[00m file. Copying to: \033[01m%s\033[00m." "${default_composer}" "${temporary_composer}"
+    initial_composer=${default_composer}
+    initial_lockfile=${default_lockfile}
     _copy ${default_composer} ${temporary_composer}
     _copy ${default_lockfile} ${temporary_lockfile}
 else
@@ -206,3 +211,7 @@ _add_header ${lock_file}
 
 # Restore comments into the fresh generated composer.yaml then remove the original file
 _restore ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
+
+# Remove initial composer files
+_remove ${initial_composer}
+_remove ${initial_lockfile}
