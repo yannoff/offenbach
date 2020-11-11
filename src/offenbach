@@ -30,6 +30,7 @@ composer=composer
 _debug(){
     [ -n "${verbosity}" ] || return 0
     local msg=$1
+    [ -n "${msg}" ] || return 0
     shift 1
     set -- "[offenbach] ${msg}\n" "$@"
     printf "$@" >&2
@@ -56,6 +57,19 @@ _exec(){
 _copy(){
     local src=$1 dest=$2
     [ -f ${src} ] && _exec "cp -v ${src} ${dest}"
+    return $?
+}
+
+#
+# Move source file to destination file
+# @param $source The source file
+# @param $target The destination file
+#
+# @todo Return error code and display error message if $source does not exist
+#
+_move(){
+    local src=$1 dest=$2
+    [ -f ${src} ] && _exec "mv -v ${src} ${dest}"
     return $?
 }
 
@@ -173,32 +187,40 @@ default_lockfile=composer.lock
 # - if an alternative filename is set via COMPOSER env variable and the file exists
 # OR
 # - if a composer.json file is found and there was no composer.yaml, assume offenbach is run for the first time
-# => copy dependency and lock file to their temporary versions
-first_run=yes
+# => move dependency and lock file to their temporary counterparts
 if [ -f "${yaml_file}" ]
 then
-    _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
     first_run=
+
+    _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
+    # Keep a copy of the original composer.yaml, for later comments restore process
     _copy ${yaml_file} ${yaml_orig}
+    # Create JSON temporary files from YAML original ones
     _yaml2json ${yaml_file} ${temporary_composer}
     _yaml2json ${lock_file} ${temporary_lockfile}
-elif [ -n "${environment_composer}" -a -f "${environment_composer}" ]
-then
-    _debug "Found a COMPOSER env variable set... Fetching content"
-    environment_lockfile=`basename ${environment_composer} .json`.lock
-    initial_composer=${environment_composer}
-    initial_lockfile=${environment_lockfile}
-    _copy ${environment_composer} ${temporary_composer}
-    _copy ${environment_lockfile} ${temporary_lockfile}
-elif [ -f "${default_composer}" ]
-then
-    _debug "Found a \033[01m%s\033[00m file. Copying to: \033[01m%s\033[00m." "${default_composer}" "${temporary_composer}"
-    initial_composer=${default_composer}
-    initial_lockfile=${default_lockfile}
-    _copy ${default_composer} ${temporary_composer}
-    _copy ${default_lockfile} ${temporary_lockfile}
 else
-    _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${default_composer}" "${yaml_file}"
+    first_run=yes
+
+    if [ -n "${environment_composer}" ]
+    then
+        _debug "Found a \033[01mCOMPOSER\033[00m env variable set (value: \033[01m%s\033[00m)" "${environment_composer}"
+        environment_lockfile=`basename ${environment_composer} .json`.lock
+        initial_composer=${environment_composer}
+        initial_lockfile=${environment_lockfile}
+    else
+        initial_composer=${default_composer}
+        initial_lockfile=${default_lockfile}
+    fi
+
+    if [ ! -f "${initial_composer}" ]
+    then
+        _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${initial_composer}" "${yaml_file}"
+    else
+        _debug "Found a \033[01m%s\033[00m file. Copying to: \033[01m%s\033[00m." "${initial_composer}" "${temporary_composer}"
+        # Rename initial composer files to their temporary counterparts
+        _move ${initial_composer} ${temporary_composer}
+        _move ${initial_lockfile} ${temporary_lockfile}
+    fi
 fi
 
 # Execute composer in a secluded environment, setting COMPOSER env variable to the temporary JSON filename
@@ -217,7 +239,3 @@ _add_header ${lock_file}
 
 # Restore comments into the fresh generated composer.yaml then remove the original file
 _restore ${yaml_orig} ${yaml_file} && _remove ${yaml_orig}
-
-# Remove initial composer files
-_remove ${initial_composer}
-_remove ${initial_lockfile}
