@@ -133,6 +133,12 @@ for arg; do
             ${composer} "$@"
             exit $?
             ;;
+        # Temporarily disabling the create-project command, which fails
+        # @see https://github.com/yannoff/offenbach/issues/9
+        create-project)
+            printf "Sorry, the \033[01m%s\033[00m command is not supported yet. Aborting.\n" "${arg}"
+            exit 1
+            ;;
         --version|list)
             printf "\033[01m%s\033[00m build: \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
             ${composer} "$@"

@@ -15,7 +15,9 @@ _Boost your [composer](https://getcomposer.org/) with YAML support!_
 
 ## Usage
 
-Offenbach behaves exactly as composer, all commands are the same, except for the 2 following points:
+All commands are the same - except for the **create-project** which is not supported for now (See [#9](https://github.com/yannoff/offenbach/issues/9)).
+
+Indeed, Offenbach behaves exactly as composer, except for the 2 following points:
 - The `composer.json` file is replaced by a `composer.yaml` file
 - The `composer.lock` file is replaced by a `composer-lock.yaml` file
 
