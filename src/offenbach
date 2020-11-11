@@ -134,7 +134,7 @@ for arg; do
             exit $?
             ;;
         --version|list)
-            printf "\033[01m%s\033[00m version \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
+            printf "\033[01m%s\033[00m build: \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
             ${composer} "$@"
             exit $?
             ;;
