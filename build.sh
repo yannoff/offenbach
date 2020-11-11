@@ -50,7 +50,11 @@ fi
 oldvers=`git tag -l | tail -1`
 
 # Check given version is greater than the last one
-if [ "${version//./}" -le "${oldvers//./}" ]
+version_num=${version//./}
+version_num=${version_num%%-*}
+oldvers_num=${oldvers//./}
+oldvers_num=${oldvers_num%%-*}
+if [ "${version_num}" -le "${oldvers_num}" ]
 then
     _err "Bad version number: \033[01;30m%s\033[00m <= \033[01;30m%s\033[00m. Aborting." ${version} ${oldvers}
 fi
