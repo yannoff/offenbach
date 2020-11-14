@@ -135,6 +135,23 @@ EOS
 }
 
 
+# Fetch alternative composer.json name set from environment, if any
+environment_composer=`printenv COMPOSER`
+
+# Generate random name for the temporary json & lock files
+temporary_composer=`php -r 'echo uniqid("offenbach.") . ".json";'`
+temporary_lockfile=`basename ${temporary_composer} .json`.lock
+
+# Default names used by offenbach
+yaml_file=composer.yaml
+yaml_orig=composer.orig.yaml
+lock_file=composer-lock.yaml
+
+# Default names used by composer
+default_composer=composer.json
+default_lockfile=composer.lock
+
+
 # Parse command line arguments,
 # some commands don't need to load composer.json & composer.lock files
 for arg; do
@@ -164,22 +181,6 @@ for arg; do
             ;;
     esac
 done
-
-# Fetch alternative composer.json name set from environment, if any
-environment_composer=`printenv COMPOSER`
-
-# Generate random name for the temporary json & lock files
-temporary_composer=`php -r 'echo uniqid("offenbach.") . ".json";'`
-temporary_lockfile=`basename ${temporary_composer} .json`.lock
-
-# Default names used by offenbach
-yaml_file=composer.yaml
-yaml_orig=composer.orig.yaml
-lock_file=composer-lock.yaml
-
-# Default names used by composer
-default_composer=composer.json
-default_lockfile=composer.lock
 
 # Assess the situation and decide what to do:
 # - if a composer.yaml file is found, offenbach has been run at least once on the project
