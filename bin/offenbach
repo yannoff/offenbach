@@ -2,7 +2,7 @@
 #
 # This file is part of the Offenbach Project
 #
-# (c) 2019-2020 Yannoff (https://github.com/yannoff)
+# (c) 2019-2021 Yannoff (https://github.com/yannoff)
 #
 # @project  Offenbach
 # @author   Yannoff (https://github.com/yannoff)
@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.2.0
-offenbach_build_date=2020-11-14T10:14:49+01:00
+offenbach_build_version=1.2.1
+offenbach_build_date=2021-06-23T21:47:17+02:00
 
 yamltools=yamltools
 composer=composer
