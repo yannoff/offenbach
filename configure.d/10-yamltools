@@ -25,6 +25,6 @@ then
     echo "yes" >&2
 else
     printf "no\n%s\n" "+ including download task in Makefile." >&2
-    printf "\tcurl -o %s/yamltools https://github.com/yannoff/yamltools/releases/latest/download/yamltools\n" ${bindir} >&1
+    printf "\tcurl -Lo %s/yamltools https://github.com/yannoff/yamltools/releases/latest/download/yamltools\n" ${bindir} >&1
     printf "\tchmod +x %s/yamltools\n" ${bindir} >&1
 fi
