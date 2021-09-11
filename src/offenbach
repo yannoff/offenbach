@@ -152,12 +152,26 @@ default_composer=composer.json
 default_lockfile=composer.lock
 
 
-# Parse command line arguments,
-# some commands don't need to load composer.json & composer.lock files
-for arg; do
+# Parse command line arguments.
+# Some commands don't need to load composer.json & composer.lock files
+# On the other hand, certain options need to be processed specifically
+args=()
+
+while [ $# -gt 0 ]
+do
+    arg=$1
     case "${arg}" in
         -v|-vv|-vvv)
             verbosity=${arg};
+            ;;
+        # Add support for dir changing via the --working-dir or -d switch
+        # @see https://github.com/yannoff/offenbach/issues/18
+        -d)
+            cwd=$2
+            shift 1
+            ;;
+        --working-dir=*)
+            cwd=${arg##*=}
             ;;
         about)
             printf "\033[01m%s\033[00m - \033[01m%s\033[00m\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
@@ -179,8 +193,19 @@ for arg; do
             ${composer} "$@"
             exit $?
             ;;
+        *)
+            args+=(${arg})
+            ;;
     esac
+    shift 1
 done
+
+set -- "${args[@]}"
+
+# If a working dir was supplied, change dir for it
+[ -n "${cwd}" ] && cd ${cwd}
+
+_debug "Current working directory: %s" $PWD
 
 # Assess the situation and decide what to do:
 # - if a composer.yaml file is found, offenbach has been run at least once on the project
