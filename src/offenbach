@@ -134,24 +134,6 @@ ${yaml}
 EOS
 }
 
-
-# Fetch alternative composer.json name set from environment, if any
-environment_composer=`printenv COMPOSER`
-
-# Generate random name for the temporary json & lock files
-temporary_composer=`php -r 'echo uniqid("offenbach.") . ".json";'`
-temporary_lockfile=`basename ${temporary_composer} .json`.lock
-
-# Default names used by offenbach
-yaml_file=composer.yaml
-yaml_orig=composer.orig.yaml
-lock_file=composer-lock.yaml
-
-# Default names used by composer
-default_composer=composer.json
-default_lockfile=composer.lock
-
-
 # Parse command line arguments.
 # Some commands don't need to load composer.json & composer.lock files
 # On the other hand, certain options need to be processed specifically
@@ -207,54 +189,75 @@ set -- "${args[@]}"
 
 _debug "Current working directory: %s" $PWD
 
+
+# Define filenames depending on the COMPOSER env var contents
+# If a COMPOSER env var is set, use it to deduce the basename
+# Otherwise, fallback to "composer" as default basename
+base=composer
+
+# Fetch alternative composer.json name set from environment, if any
+env_composer=`printenv COMPOSER`
+
+# If the COMPOSER env var is set, build filenames upon it
+if [ -n "${env_composer}" ]
+then
+
+    _debug "Found a \033[01m%s\033[00m env variable set (value: \033[01m%s\033[00m)" COMPOSER "${env_composer}"
+
+    # If the extension is .yaml it refers to an offenbach file
+    # => Use the environment COMPOSER name for yaml_file, and use the extension for all offenbach files
+    ext=${env_composer##*.}
+    base=$(basename ${env_composer} .${ext})
+
+    # Restrict allowed extensions to *.json and *.yaml
+    if [ "${ext}" != "yaml" ] && [ "${ext}" != "json" ]
+    then
+        printf "Only \033[01m*.json\033[00m or \033[01m*.yaml\033[00m are allowed for \033[01mCOMPOSER\033[00m.\n"
+        printf "Exiting.\n"
+        exit 2
+    fi
+else
+    _debug "No \033[01mCOMPOSER\033[00m env variable set, falling back to default names"
+fi
+
+# Build all filenames from what was deduced in the upper block
+yaml_file=${base}.yaml
+yaml_orig=${base}.orig.yaml
+lock_file=${base}-lock.yaml
+
+def_composer=${base}.json
+def_lockfile=${base}.lock
+
+_debug "YAML File: \033[01m%s\033[00m" ${yaml_file}
+
+
 # Assess the situation and decide what to do:
-# - if a composer.yaml file is found, offenbach has been run at least once on the project
-# => convert both dependency and lock (if exists) files to their temporary JSON alter ego
-# - if an alternative filename is set via COMPOSER env variable and the file exists
-# OR
-# - if a composer.json file is found and there was no composer.yaml, assume offenbach is run for the first time
-# => move dependency and lock file to their temporary counterparts
+# - if the YAML file is found, offenbach has been run at least once on the project
+# => convert dependency and lock (if exists) files to their temporary JSON counterparts
+# - otherwise, assume this is the first time offenbach is run
 if [ -f "${yaml_file}" ]
 then
-    first_run=
-
     _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
     # Keep a copy of the original composer.yaml, for later comments restore process
     _copy ${yaml_file} ${yaml_orig}
     # Create JSON temporary files from YAML original ones
-    _yaml2json ${yaml_file} ${temporary_composer}
-    _yaml2json ${lock_file} ${temporary_lockfile}
+    _yaml2json ${yaml_file} ${def_composer}
+    _yaml2json ${lock_file} ${def_lockfile}
 else
     first_run=yes
 
-    if [ -n "${environment_composer}" ]
+    if [ ! -f "${def_composer}" ]
     then
-        _debug "Found a \033[01mCOMPOSER\033[00m env variable set (value: \033[01m%s\033[00m)" "${environment_composer}"
-        environment_lockfile=`basename ${environment_composer} .json`.lock
-        initial_composer=${environment_composer}
-        initial_lockfile=${environment_lockfile}
-    else
-        initial_composer=${default_composer}
-        initial_lockfile=${default_lockfile}
-    fi
-
-    if [ ! -f "${initial_composer}" ]
-    then
-        _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${initial_composer}" "${yaml_file}"
-    else
-        _debug "Found a \033[01m%s\033[00m file. Copying to: \033[01m%s\033[00m." "${initial_composer}" "${temporary_composer}"
-        # Rename initial composer files to their temporary counterparts
-        _move ${initial_composer} ${temporary_composer}
-        _move ${initial_lockfile} ${temporary_lockfile}
+        _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${def_composer}" "${yaml_file}"
     fi
 fi
 
-# Execute composer in a secluded environment, setting COMPOSER env variable to the temporary JSON filename
-env COMPOSER=${temporary_composer} ${composer} "$@"
+# Execute composer in a secluded env, setting COMPOSER env variable to the default filename
+env COMPOSER=${def_composer} ${composer} "$@"
 
-# Convert updated JSON content back to YAML and remove the temporary files
-_json2yaml ${temporary_composer} ${yaml_file} && _remove ${temporary_composer}
-_json2yaml ${temporary_lockfile} ${lock_file} && _remove ${temporary_lockfile}
+# Convert updated JSON content back to YAML and remove the default files
+_json2yaml ${def_composer} ${yaml_file} && _remove ${def_composer}
+_json2yaml ${def_lockfile} ${lock_file} && _remove ${def_lockfile}
 
 # Add offenbach header note, if appropriate
 if [ -n "${first_run}" ]
