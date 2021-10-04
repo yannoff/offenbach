@@ -2,7 +2,7 @@
 
 _An overlay script for [composer](https://getcomposer.org/), providing support for `composer.yaml` files._
 
-[![Latest stable release](https://img.shields.io/badge/Release-1.2.0-blue)](https://github.com/yannoff/offenbach/releases/latest "Latest stable release")
+[![Latest stable release](https://img.shields.io/badge/Release-1.2.2-blue)](https://github.com/yannoff/offenbach/releases/latest "Latest stable release")
 [![MIT License](https://img.shields.io/badge/License-MIT-lightgrey)](https://github.com/yannoff/offenbach/blob/master/LICENSE "MIT License")
 
 ## Purpose
@@ -24,28 +24,39 @@ _Ever struggled with a merge conflict on a `composer.lock` file? Tough huh?_
 - [curl](https://curl.haxx.se/)
 - [yamltools](https://github.com/yannoff/yamltools) <sup>(2)</sup> 
 
-> <sup>(1)</sup>_Should also work on [Git Bash](https://gitforwindows.org/) / [MinTTY](https://mintty.github.io/), although it has not been tested hitherto._<br/>
-> <sup>(2)</sup>_Will be downloaded at build time by the install script if not found on the system._
+> **<sup>(1)</sup>** _Should also work on [Git Bash](https://gitforwindows.org/) / [MinTTY](https://mintty.github.io/), although it has not been tested hitherto._<br/>
+> **<sup>(2)</sup>** _Will be downloaded at build time by the install script if not found on the system._
 
 ## Install
 
 ### Quick install...
 
-Download the latest version of the binary to the directory of your choice.
+Download the latest version of the binary to the directory of your choice. <sup>(3)</sup>
 
-> :warning: Make sure the dir is included in the `$PATH` environment variable.
+:warning: Make sure the download directory is included in the `$PATH` system-wide variable.
+
+> **<sup>(3)</sup>** _The [yamltools](https://github.com/yannoff/yamltools) binary which is required by offenbach must be downloaded too._
 
 _For instance:_
 
-```bash
-$ curl -o ~/bin/offenbach -sSL https://github.com/yannoff/offenbach/releases/latest/download/offenbach
-```
+1. Download yamltools
 
-Then make the script executable:
+    ```bash
+    $ curl -o ~/bin/yamltools -sSL https://github.com/yannoff/yamltools/releases/latest/download/yamltools
+    ```
 
-```bash
-$ chmod +x ~/bin/offenbach
-```
+2. Download offenbach
+
+    ```bash
+    $ curl -o ~/bin/offenbach -sSL https://github.com/yannoff/offenbach/releases/latest/download/offenbach
+    ```
+
+
+3. Make the scripts executable:
+
+    ```bash
+    $ chmod +x ~/bin/yamltools ~/bin/offenbach
+    ```
 
 ### ...or install from sources
 
@@ -66,20 +77,26 @@ $ make install
 
 ## How it works
 
+
+_Offenbach works exactly as composer, indeed it is just an overlay script, acting as a pass-thru for composer commands._
+
 <!--Offenbach is an overlay shell script to be used in adjonction to composer -->
 
 The key principle is really simple: Offenbach will create 2 temporary JSON files before each operation, feed composer with them, then convert them back to YAML format.
 
-As a consequence, Offenbach behaves exactly as composer, except for the 2 following points:
+From the user's perspective, the only difference is in the composer files:
 
 - The `composer.json` file is replaced by a `composer.yaml` file
 - The `composer.lock` file is replaced by a `composer-lock.yaml` file
 
+However, a few [limitations](#limitations) must be considered.
+
+### Limitations
+
+- the **`create-project`** command is not supported yet (See [#9](https://github.com/yannoff/offenbach/issues/9)).
+- projects using `offenbach` instead of `composer` will [not be eligible for publication on packagist](#packagist).
+
 ## Usage
-
-All composer commands are supported, except for the **create-project** command (See [#9](https://github.com/yannoff/offenbach/issues/9)).
-
-_Indeed, Offenbach is just an overlay script, acting as a pass-thru for composer commands._
 
 There are 2 major use cases:
 - [Creating a new project from scratch](#creating-a-new-project-from-scratch)
@@ -126,11 +143,14 @@ As a result, [offenbach](https://github.com/yannoff/offenbach) will use the init
 
 ### Packagist
 
-Projects using `offenbach` instead of `composer` will not be eligible for publication on [packagist](https://packagist.org/).
+Since [packagist](https://packagist.org/) analysis is based on the project metadata deduced from the `composer.json` file contents,
+it will fail to recognize offenbach's `composer.yaml` file.
+
+As a consequence, projects using offenbach will not be able to publish on [packagist.org](https://packagist.org/).
 
 ### PHPStorm
 
-PSR-0 / PSR-4 automatic detection will not work on [PhpStorm](https://www.jetbrains.com/phpstorm/), as it is based on the `composer.json` file contents.
+PSR-0 / PSR-4 automatic detection may not work properly on [PhpStorm](https://www.jetbrains.com/phpstorm/), as it is based on the `composer.json` file contents.
 
 ### Symfony
 
@@ -180,5 +200,9 @@ The project is still in a **high development phase**. _[Feedbacks](issues) are w
 [Jacques Offenbach](https://en.wikipedia.org/wiki/Jacques_Offenbach) (1819-1880) was a German-born French composer of the 19th.<!--, which would be a good definition for this project.-->
 
 ## Credits
+
+The concepts behind offenbach were highly inspired by the [igorw/composer-yaml](https://github.com/igorw/composer-yaml) project.
+
+## License
 
 Licensed under the [MIT License](LICENSE).
