@@ -66,7 +66,7 @@ sed -i "s/@@date@@/${build_date}/" ${builddir}/${name}
 
 # Update README
 # TODO: replace ${oldvers} by the relevant REGEXP
-sed -i "s#https://img.shields.io/badge/version-${oldvers}-blue#https://img.shields.io/badge/version-${version}-blue#" README.md
+sed -i "s#https://img.shields.io/badge/Release-${oldvers}-blue#https://img.shields.io/badge/Release-${version}-blue#" README.md
 
 # Display success message & display version command output
 test_command="${builddir}/${name} --version"
