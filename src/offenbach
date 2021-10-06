@@ -212,7 +212,7 @@ then
     # Restrict allowed extensions to *.json and *.yaml
     if [ "${ext}" != "yaml" ] && [ "${ext}" != "json" ]
     then
-        printf "Only \033[01m*.json\033[00m or \033[01m*.yaml\033[00m are allowed for \033[01mCOMPOSER\033[00m.\n"
+        printf "Error: Only \033[01m*.json\033[00m or \033[01m*.yaml\033[00m are allowed for \033[01mCOMPOSER\033[00m.\n"
         printf "Exiting.\n"
         exit 2
     fi
@@ -228,7 +228,7 @@ lock_file=${base}-lock.yaml
 def_composer=${base}.json
 def_lockfile=${base}.lock
 
-_debug "YAML File: \033[01m%s\033[00m" ${yaml_file}
+_debug "Using \033[01m%s\033[00m for the dependency file name" ${yaml_file}
 
 
 # Assess the situation and decide what to do:
