@@ -64,9 +64,8 @@ cp ${srcdir}/${name} ${builddir}/${name}
 sed -i "s/@@version@@/${version}/" ${builddir}/${name}
 sed -i "s/@@date@@/${build_date}/" ${builddir}/${name}
 
-# Update README
-# TODO: replace ${oldvers} by the relevant REGEXP
-sed -i "s#https://img.shields.io/badge/Release-${oldvers}-blue#https://img.shields.io/badge/Release-${version}-blue#" README.md
+# Update README's release badge version number
+sed -i "s#https://img.shields.io/badge/Release-\([0-9]\+.[0-9]\+.[0-9]\+\)-blue#https://img.shields.io/badge/Release-${version}-blue#" README.md
 
 # Display success message & display version command output
 test_command="${builddir}/${name} --version"
