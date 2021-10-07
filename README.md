@@ -42,13 +42,13 @@ _For instance:_
 1. Download yamltools
 
     ```bash
-    $ curl -o ~/bin/yamltools -sSL https://github.com/yannoff/yamltools/releases/latest/download/yamltools
+    curl -Lo ~/bin/yamltools -sSL https://github.com/yannoff/yamltools/releases/latest/download/yamltools
     ```
 
 2. Download offenbach
 
     ```bash
-    $ curl -o ~/bin/offenbach -sSL https://github.com/yannoff/offenbach/releases/latest/download/offenbach
+    curl -Lo ~/bin/offenbach -sSL https://github.com/yannoff/offenbach/releases/latest/download/offenbach
     ```
 
 
