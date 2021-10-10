@@ -29,51 +29,62 @@ _Ever struggled with a merge conflict on a `composer.lock` file? Tough huh?_
 
 ## Install
 
-### Quick install...
+### Option A: Using the online installer script
 
-Download the latest version of the binary to the directory of your choice. <sup>(3)</sup>
-
-:warning: Make sure the download directory is included in the `$PATH` system-wide variable.
-
-> **<sup>(3)</sup>** _The [yamltools](https://github.com/yannoff/yamltools) binary which is required by offenbach must be downloaded too._
-
-_For instance:_
-
-1. Download yamltools
-
-    ```bash
-    curl -Lo ~/bin/yamltools -sSL https://github.com/yannoff/yamltools/releases/latest/download/yamltools
-    ```
-
-2. Download offenbach
-
-    ```bash
-    curl -Lo ~/bin/offenbach -sSL https://github.com/yannoff/offenbach/releases/latest/download/offenbach
-    ```
-
-
-3. Make the scripts executable:
-
-    ```bash
-    $ chmod +x ~/bin/yamltools ~/bin/offenbach
-    ```
-
-### ...or install from sources
-
-1. Clone or fetch a [zipball](https://github.com/yannoff/offenbach/archive/master.zip) from this repository
-2. Run `./configure bin/offenbach`
-3. Run `make`
-4. Run `sudo make install` 
-
-_**NOTE:**_<br/>
-_Depending on the install directory set up with `./configure`, `sudo` might not be used._<br/>
-_For instance, if directory is owned by the standard user:_
+_The script may be executed on-the-fly, from the target install directory:_
 
 ```bash
-$ ./configure --bindir=$HOME/bin bin/offenbach
-$ make
-$ make install
+curl -L -s -o - https://github.com/yannoff/offenbach/releases/latest/download/install.sh | bash
 ```
+
+_Or downloaded for a more fine-tuned install:_
+
+```bash
+curl -L -o /tmp/install.sh https://github.com/yannoff/offenbach/releases/latest/download/install.sh
+sudo /tmp/install.sh --install-dir=/usr/local/bin --filename=offenbach
+```
+
+### Installer options:
+
+#### `--install-dir` 
+_Offenbach installation directory **<sup>(3)</sup> <sup>(4)</sup>**_<br/>
+_By defaults, the install script will download Offenbach in the current directory._
+
+> **<sup>(3)</sup>** _To allow calling `offenbach` from anywhere, the install dir **must be** included in the `$PATH` system-wide variable._<br/>
+> **<sup>(4)</sup>** _The script may be invoked in `sudo` mode if the install dir is not owned by the standard user._<br/>
+
+
+#### `--filename`
+_Alternative name for the offenbach executable._
+
+
+#### `--version`
+_Alternative offenbach version to install._<br/>
+_By defaults, the install script will download the latest release version._
+
+
+### Option B: Installing from sources
+
+
+```bash
+# Fetch the sources from the repository
+git clone https://github.com/yannoff/offenbach
+
+# Enter the project's directory
+cd offenbach
+
+# Configure installation (5)
+./configure bin/offenbach
+
+# Build
+make
+
+# Install executable (6)
+sudo make install
+```
+
+> **<sup>(5)</sup>** _The `--help` option will give a thorough overview of the possible customizations._<br/>
+> **<sup>(6)</sup>** _Depending on the install directory set up, `sudo` might not be used._
 
 ## How it works
 
