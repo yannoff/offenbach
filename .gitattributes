@@ -1,2 +1,3 @@
 .git*     export-ignore
 /build.sh export-ignore
+/install.sh export-ignore
