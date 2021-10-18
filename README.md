@@ -120,19 +120,20 @@ After prompting for the usual few questions, [offenbach](https://github.com/yann
 
 ### Migrating an existing composer project
 
-> :warning: _**Warning:** migrating from [composer](https://getcomposer.org/) to  [offenbach](https://github.com/yannoff/offenbach) is a **one-way** operation, there is no possible return to use composer back after the project has been migrated._
+> **:warning: BEWARE**<br/>
+> _Migrating from [composer](https://getcomposer.org/) to  [offenbach](https://github.com/yannoff/offenbach) is a **one-way** operation, there is no possible return to use composer back after the project has been migrated._
 
 In a shell terminal, from the project root (i.e. the directory where the `composer.json` reside), run:
 
 ```bash
-offenbach install
+offenbach migrate
 ```
 
-or 
-
-```bash
-offenbach update --lock
-```
+> :bulb: *Alternatively, any call to standard composer commands, such as:*
+> - `offenbach install`
+> - `offenbach update --lock`
+>
+> *will trigger a migration.*
 
 <!--
 As a result, [offenbach](https://github.com/yannoff/offenbach) will build the new `composer.yaml` and `composer-lock.yaml` files upon the former JSON composer files (`composer.json` and `composer.lock`, respectively), then remove the original ones.
