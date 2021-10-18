@@ -134,6 +134,30 @@ ${yaml}
 EOS
 }
 
+#
+# Print the list of available offenbach specific commands
+#
+_list_commands(){
+    cat <<EOH
+
+[01;34mOffenbach commands:[00m
+  [01mmigrate[00m              Migrate an existing Composer project to the offenbach structure.
+EOH
+}
+
+#
+# Migrate initial JSON files to their YAML counterparts
+#
+_migrate(){
+    printf "Converting: \033[01m%s\033[00m => \033[01m%s\033[00m \n" ${def_composer} ${yaml_file}
+    _json2yaml ${def_composer} ${yaml_file} && _remove ${def_composer}
+    printf "Converting: \033[01m%s\033[00m => \033[01m%s\033[00m \n" ${def_lockfile} ${lock_file}
+    _json2yaml ${def_lockfile} ${lock_file} && _remove ${def_lockfile}
+    # Since this is a migration, this is de-facto a first-run
+    _add_header ${yaml_file}
+    _add_header ${lock_file}
+}
+
 # Parse command line arguments.
 # Certain options need to be processed specifically
 args=()
@@ -226,10 +250,17 @@ case $1 in
         --version|list)
             printf "\033[01m%s\033[00m build: \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
             ${composer} "$@"
-            exit $?
+            [ "$1" == "list" ] && _list_commands
+            exit 0
             ;;
         --help|help|search|selfupdate|self-update)
             ${composer} "$@"
+            exit $?
+            ;;
+        # Offenbach specific commands (no composer call)
+        migrate)
+            printf "Migrating composer files to their offenbach counterparts...\n"
+            _migrate
             exit $?
             ;;
 esac
