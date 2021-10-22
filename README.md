@@ -104,7 +104,6 @@ However, a few [limitations](#limitations) must be considered.
 
 ### Limitations
 
-- the **`create-project`** command is not supported yet (See [#9](https://github.com/yannoff/offenbach/issues/9)).
 - projects using `offenbach` instead of `composer` will [not be eligible for publication on packagist](#packagist).
 - only `*.json` and `*.yaml` filenames are allowed for the **`COMPOSER`** env var
 
