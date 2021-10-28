@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.4.0
-offenbach_build_date=2021-10-19T19:00:47+02:00
+offenbach_build_version=1.5.0
+offenbach_build_date=2021-10-28T22:22:41+02:00
 
 yamltools=yamltools
 composer=composer
@@ -158,6 +158,53 @@ _migrate(){
     _add_header ${lock_file}
 }
 
+#
+# Find the first argument to be a valid dir in the given list
+# Fallback to package name if no dir found in the arguments
+# @param $...args The arguments list
+# @return The deduced directory
+#
+_get_cwd(){
+
+    # First argument is the command name
+    shift 1
+
+    # Eliminate options from command line arguments
+    for arg
+    do
+        _debug "Processing arg: \033[01m%s\033[00m" "${arg}"
+        case ${arg} in
+            -*)
+            shift 1
+            continue
+            ;;
+        esac
+    done
+
+    # If the project directory argument was supplied, use it
+    if [ -d "${2}" ]
+    then
+        _debug "Use project directory: \033[01m%s\033[00m" "${2}"
+        echo "${2}"
+        return 0
+    fi
+
+    # Fallback to the package name (without vendor) as default dir otherwise
+    _debug "No user-defined directory, using package name: \033[01m%s\033[00m" "${1}"
+    echo "${1##*/}"
+    return 0
+}
+
+#
+# Change directory with a debug message
+# @param $dir The directory
+#
+_chdir(){
+    _debug "Changing working directory to: \033[01m%s\033[00m" "$1"
+    cd "$1"
+    _debug "CWD: %s" $PWD
+}
+
 # Parse command line arguments.
 # Certain options need to be processed specifically
 args=()
@@ -188,9 +235,7 @@ done
 set -- "${args[@]}"
 
 # If a working dir was supplied, change dir for it
-[ -n "${cwd}" ] && cd ${cwd}
-
-_debug "Current working directory: %s" $PWD
+[ -n "${cwd}" ] && _chdir ${cwd}
 
 
 # Define filenames depending on the COMPOSER env var contents
@@ -241,11 +286,12 @@ case $1 in
             ${composer} "$@"
             exit $?
             ;;
-        # Temporarily disabling the create-project command, which fails
-        # @see https://github.com/yannoff/offenbach/issues/9
         create-project)
-            printf "Sorry, the \033[01m%s\033[00m command is not supported yet. Aborting.\n" "${arg}"
-            exit 1
+            _debug "Executing command: \033[01m%s\033[00m" "${composer} $*"
+            ${composer} "$@" && \
+            _chdir $(_get_cwd "$@") && \
+            _migrate
+            exit $?
             ;;
         --version|list)
             printf "\033[01m%s\033[00m build: \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
