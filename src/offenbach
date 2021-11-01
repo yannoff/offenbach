@@ -45,7 +45,7 @@ _exec(){
     [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "${cmd}"
     output="$(${cmd} 2>&1)"
     status=$?
-    echo "${output}"
+    echo "${output}" >&2
     return ${status}
 }
 
