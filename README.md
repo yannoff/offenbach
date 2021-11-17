@@ -203,6 +203,66 @@ class Kernel extends BaseKernel
 }
 ```
 
+### Laravel
+
+The [Application::getNamespace()](https://github.com/laravel/framework/blob/v8.69.0/src/Illuminate/Foundation/Application.php#L1389) method (used by some artisan `make:*` commands to populate PHP code auto-generated from stubs) relies on the `composer.json` contents to find out the application's PSR-4 namespace, and hence must be overriden in a custom Application class.
+
+> ⚠️ **BEWARE**<br/>
+> _The `symfony/yaml` component must be part of the dependencies list._<br/>
+> _Be sure to add it before implementing the custom `Application` class override:_
+>
+> ```
+> offenbach require symfony/yaml
+> ```
+
+For instance:
+
+```php
+<?php
+// app/Foundation/Application.php
+
+namespace App\Foundation;
+
+// Don't forget to import the Yaml class
+use Symfony\Component\Yaml\Yaml;
+
+class Application extends \Illuminate\Foundation\Application
+{
+    /**
+     * Override base method to support offenbach
+     *
+     * @return string
+     *
+     * @throws \RuntimeException
+     */
+    public function getNamespace()
+    {
+        // ...
+
+        // Original code
+        //$composer = json_decode(file_get_contents($this->basePath('composer.json')), true);
+
+        // Replacement: Add support for composer.yaml beside standard composer.json files
+        if (file_exists($this->basePath('composer.yaml'))) {
+            $composer = Yaml::parseFile($this->basePath('composer.yaml'));
+        } else {
+            $composer = json_decode(file_get_contents($this->basePath('composer.json')), true);
+        }
+
+        // ...
+    }
+```
+
+Then use the custom class:
+
+```php
+// bootstrap/app.php
+
+$app = App\Foundation\Application(
+    $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
+);
+```
+
 
 ## Advisory
 The project is still in a **high development phase**. _[Feedbacks](issues) are welcome and encouraged!_
