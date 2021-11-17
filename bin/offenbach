@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.5.1
-offenbach_build_date=2021-11-06T18:27:47+01:00
+offenbach_build_version=1.5.2
+offenbach_build_date=2021-11-17T19:34:22+01:00
 
 yamltools=yamltools
 composer=composer
@@ -45,7 +45,7 @@ _exec(){
     [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "${cmd}"
     output="$(${cmd} 2>&1)"
     status=$?
-    echo "${output}" >&2
+    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && echo -e "\033[01;30m${output}\033[00m" >&2
     return ${status}
 }
 

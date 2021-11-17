@@ -2,7 +2,7 @@
 
 _An overlay script for [composer](https://getcomposer.org/), providing support for `composer.yaml` files._
 
-[![Latest stable release](https://img.shields.io/badge/Release-1.5.1-blue)](https://github.com/yannoff/offenbach/releases/latest "Latest stable release")
+[![Latest stable release](https://img.shields.io/badge/Release-1.5.2-blue)](https://github.com/yannoff/offenbach/releases/latest "Latest stable release")
 [![MIT License](https://img.shields.io/badge/License-MIT-lightgrey)](https://github.com/yannoff/offenbach/blob/master/LICENSE "MIT License")
 
 ## Purpose
