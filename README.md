@@ -104,8 +104,11 @@ However, a few [limitations](#limitations) must be considered.
 
 ### Limitations
 
+- `offenbach` only handles **project** composer files **<sup>(7)</sup>**
 - projects using `offenbach` instead of `composer` will [not be eligible for publication on packagist](#packagist).
-- only `*.json` and `*.yaml` filenames are allowed for the **`COMPOSER`** env var
+- only `*.json` and `*.yaml` filenames are allowed for the **`COMPOSER`** env var.
+
+> **<sup>(7)</sup>** _The global composer files in `COMPOSER_HOME` are left in their original standard JSON format_.
 
 
 ## Usage
