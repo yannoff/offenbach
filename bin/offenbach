@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.5.2
-offenbach_build_date=2021-11-17T19:34:22+01:00
+offenbach_build_version=1.5.3
+offenbach_build_date=2021-11-23T19:35:02+01:00
 
 yamltools=yamltools
 composer=composer
@@ -299,7 +299,8 @@ case $1 in
             [ "$1" == "list" ] && _list_commands
             exit 0
             ;;
-        --help|help|search|selfupdate|self-update)
+        # To avoid unnecessary conversions, handover directly to composer when commands do not involve project files
+        global|--help|help|search|selfupdate|self-update)
             ${composer} ${verbosity} "$@"
             exit $?
             ;;
