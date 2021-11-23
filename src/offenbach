@@ -154,6 +154,35 @@ EOH
 }
 
 #
+# Print help message
+# Print offenbach specific command help if appropriate, fallback to composer help otherwise
+# @param $command The command name
+#
+_help(){
+    case ${1} in
+        self-update|selfupdate)
+            cat <<EOH
+${blue}Usage:${reset}
+  ${bold}self-update${reset} [<version>]
+  ${bold}selfupdate${reset} [<version>]
+
+${blue}Arguments:${reset}
+  ${bold}version${reset}          Optional ${bold}exact${reset} version to update to (eg: ${bold}1.5.3${reset})
+
+${blue}Help:${reset}
+  Upgrade ${bold}offenbach${reset} to the given version.
+  If no version specified, the ${bold}latest${reset} release will be installed.
+EOH
+        ;;
+
+        *)
+            ${composer} ${verbosity} help "$@"
+        ;;
+    esac
+    return $?
+}
+
+#
 # Migrate initial JSON files to their YAML counterparts
 #
 _migrate(){
@@ -164,6 +193,63 @@ _migrate(){
     # Since this is a migration, this is de-facto a first-run
     _add_header ${yaml_file}
     _add_header ${lock_file}
+}
+
+#
+# Update offenbach version
+# @param $version Optional version (defaults to "latest")
+#
+_self_update(){
+    local installer filename installdir logfile output status version=${1:-latest}
+    printf "Updating offenbach script to version: ${blue}%s${reset}\n\n" "${version}"
+    installer=/tmp/offenbach-installer
+    logfile=/tmp/offenbach-update-$(date +"%Y%m%d%H%M").log
+    filename=$(basename ${0})
+    _debug "Offenbach executable filename: %s" "${filename}"
+    installdir=$(dirname $(which ${filename}))
+    _debug "Offenbach executable install dir: %s" "${installdir}"
+    rollback=$($0 --version | awk '(NR == 1) { print $3; }' | _logify)
+    _debug "Current installed version: %s" "${rollback}"
+    curl -Lso ${installer} https://github.com/yannoff/offenbach/releases/latest/download/install.sh
+    chmod +x ${installer}
+    _debug "Executing: ${installer} --filename=${filename} --install-dir=${installdir} --version=${version} 2>&1"
+    output=$(${installer} --filename=${filename} --install-dir=${installdir} --version=${version} 2>&1)
+    status=$?
+    echo -e "${output}" | _logify >${logfile}
+    rm ${installer}
+
+    printf "Update complete: ${blue}%s${reset}\n\n" "$(${filename} --version | head -1 | _logify)"
+    printf "A full log has been saved to: ${bold}%s${reset}\n\n" "${logfile}"
+    printf "Use ${bold}%s${reset} to rollback to version ${blue}%s${reset}\n" "${filename} self-update ${rollback}" "${rollback}"
+    return ${status}
+}
+
+#
+# Sanitize the standard input by removing control chars
+#
+_logify(){
+    php -r '
+        $contents = file_get_contents("php://stdin");
+
+        // First, suppress carriage return chars
+        $contents = str_replace("", chr(10), $contents);
+
+        // Remove all terminal color control chars
+        $contents = str_split($contents);
+        $contents = array_filter($contents, static function($c) {
+            static $skip = false;
+            if (ord($c) == 27) {
+                $skip = true;
+            }
+            if ($skip) {
+                if ($c == "m") {
+                    $skip = false;
+                }
+                return false;
+            }
+            return true;
+        });
+        echo implode("", $contents);'
 }
 
 #
@@ -308,14 +394,37 @@ case $1 in
             exit 0
             ;;
         # To avoid unnecessary conversions, handover directly to composer when commands do not involve project files
-        global|--help|help|search|selfupdate|self-update)
+        global|--help|search)
             ${composer} ${verbosity} "$@"
+            exit $?
+            ;;
+        # Help command override: prints a different message for offenbach specific commands
+        help)
+            shift 1
+            _help "$@"
             exit $?
             ;;
         # Offenbach specific commands (no composer call)
         migrate)
             printf "Migrating composer files to their offenbach counterparts...\n"
             _migrate
+            exit $?
+            ;;
+        # Override to the self-update command
+        self-update|selfupdate)
+            if [ "${2}" == "--help" ]
+            then
+                _help ${1}
+                exit 0
+            fi
+            echo "************************************************************************************************"
+            echo "               ${bold}NOTE:${reset} This is the ${blue}offenbach${reset} self-update command"
+            echo
+            echo "                To update ${blue}composer${reset}, use: ${bold}composer self-update${reset}"
+            echo "************************************************************************************************"
+            echo
+            shift 1
+            _self_update "$@"
             exit $?
             ;;
 esac
