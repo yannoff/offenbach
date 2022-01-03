@@ -2,7 +2,7 @@
 #
 # This file is part of the Offenbach Project
 #
-# (c) 2019-2021 Yannoff (https://github.com/yannoff)
+# (c) 2019-2022 Yannoff (https://github.com/yannoff)
 #
 # @project  Offenbach
 # @author   Yannoff (https://github.com/yannoff)
