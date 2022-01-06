@@ -22,6 +22,14 @@ offenbach_build_date=@@date@@
 yamltools=yamltools
 composer=composer
 
+# Terminal color & style modifiers
+# The "escape" notation have been preferred to the ASCII one,
+# to provide support for the heredoc text blocks
+blue="[01;34m"
+grey="[01;30m"
+bold="[01m"
+reset="[00m"
+
 #
 # If verbosity is set, print formatted message preprended with app name
 # @param $message  The formatted debug message to print
@@ -45,7 +53,7 @@ _exec(){
     [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "${cmd}"
     output="$(${cmd} 2>&1)"
     status=$?
-    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && echo -e "\033[01;30m${output}\033[00m" >&2
+    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && echo -e "${grey}${output}${reset}" >&2
     return ${status}
 }
 
@@ -140,8 +148,8 @@ EOS
 _list_commands(){
     cat <<EOH
 
-[01;34mOffenbach commands:[00m
-  [01mmigrate[00m              Migrate an existing Composer project to the offenbach structure.
+${blue}Offenbach commands:${reset}
+  ${bold}migrate${reset}              Migrate an existing Composer project to the offenbach structure.
 EOH
 }
 
@@ -149,9 +157,9 @@ EOH
 # Migrate initial JSON files to their YAML counterparts
 #
 _migrate(){
-    printf "Converting: \033[01m%s\033[00m => \033[01m%s\033[00m \n" ${def_composer} ${yaml_file}
+    printf "Converting: ${bold}%s${reset} => ${bold}%s${reset} \n" ${def_composer} ${yaml_file}
     _json2yaml ${def_composer} ${yaml_file} && _remove ${def_composer}
-    printf "Converting: \033[01m%s\033[00m => \033[01m%s\033[00m \n" ${def_lockfile} ${lock_file}
+    printf "Converting: ${bold}%s${reset} => ${bold}%s${reset} \n" ${def_lockfile} ${lock_file}
     _json2yaml ${def_lockfile} ${lock_file} && _remove ${def_lockfile}
     # Since this is a migration, this is de-facto a first-run
     _add_header ${yaml_file}
@@ -172,7 +180,7 @@ _get_cwd(){
     # Eliminate options from command line arguments
     for arg
     do
-        _debug "Processing arg: \033[01m%s\033[00m" "${arg}"
+        _debug "Processing arg: ${bold}%s${reset}" "${arg}"
         case ${arg} in
             -*)
             shift 1
@@ -184,13 +192,13 @@ _get_cwd(){
     # If the project directory argument was supplied, use it
     if [ -d "${2}" ]
     then
-        _debug "Use project directory: \033[01m%s\033[00m" "${2}"
+        _debug "Use project directory: ${bold}%s${reset}" "${2}"
         echo "${2}"
         return 0
     fi
 
     # Fallback to the package name (without vendor) as default dir otherwise
-    _debug "No user-defined directory, using package name: \033[01m%s\033[00m" "${1}"
+    _debug "No user-defined directory, using package name: ${bold}%s${reset}" "${1}"
     echo "${1##*/}"
     return 0
 }
@@ -200,7 +208,7 @@ _get_cwd(){
 # @param $dir The directory
 #
 _chdir(){
-    _debug "Changing working directory to: \033[01m%s\033[00m" "$1"
+    _debug "Changing working directory to: ${bold}%s${reset}" "$1"
     cd "$1"
     _debug "CWD: %s" $PWD
 }
@@ -250,7 +258,7 @@ env_composer=`printenv COMPOSER`
 if [ -n "${env_composer}" ]
 then
 
-    _debug "Found a \033[01m%s\033[00m env variable set (value: \033[01m%s\033[00m)" COMPOSER "${env_composer}"
+    _debug "Found a ${bold}%s${reset} env variable set (value: ${bold}%s${reset})" COMPOSER "${env_composer}"
 
     # If the extension is .yaml it refers to an offenbach file
     # => Use the environment COMPOSER name for yaml_file, and use the extension for all offenbach files
@@ -260,12 +268,12 @@ then
     # Restrict allowed extensions to *.json and *.yaml
     if [ "${ext}" != "yaml" ] && [ "${ext}" != "json" ]
     then
-        printf "Error: Only \033[01m*.json\033[00m or \033[01m*.yaml\033[00m are allowed for \033[01mCOMPOSER\033[00m.\n"
+        printf "Error: Only ${bold}*.json${reset} or ${bold}*.yaml${reset} are allowed for ${bold}COMPOSER${reset}.\n"
         printf "Exiting.\n"
         exit 2
     fi
 else
-    _debug "No \033[01mCOMPOSER\033[00m env variable set, falling back to default names"
+    _debug "No ${bold}COMPOSER${reset} env variable set, falling back to default names"
 fi
 
 # Build all filenames from what was deduced in the upper block
@@ -276,25 +284,25 @@ lock_file=${base}-lock.yaml
 def_composer=${base}.json
 def_lockfile=${base}.lock
 
-_debug "Using \033[01m%s\033[00m for the dependency file name" ${yaml_file}
+_debug "Using ${bold}%s${reset} for the dependency file name" ${yaml_file}
 
 # Process special commands
 # Some commands don't need to load composer.json & composer.lock files
 case $1 in
         about)
-            printf "\033[01m%s\033[00m - \033[01m%s\033[00m\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
+            printf "${bold}%s${reset} - ${bold}%s${reset}\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
             ${composer} ${verbosity} "$@"
             exit $?
             ;;
         create-project)
-            _debug "Executing command: \033[01m%s\033[00m" "${composer} $*"
+            _debug "Executing command: ${bold}%s${reset}" "${composer} $*"
             ${composer} ${verbosity} "$@" && \
             _chdir $(_get_cwd "$@") && \
             _migrate
             exit $?
             ;;
         --version|list)
-            printf "\033[01m%s\033[00m build: \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
+            printf "${bold}%s${reset} build: ${bold}%s${reset} %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
             ${composer} ${verbosity} "$@"
             [ "$1" == "list" ] && _list_commands
             exit 0
@@ -318,7 +326,7 @@ esac
 # - otherwise, assume this is the first time offenbach is run
 if [ -f "${yaml_file}" ]
 then
-    _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
+    _debug "Found a ${bold}%s${reset} file. Converting to JSON..." "${yaml_file}"
     # Keep a copy of the original composer.yaml, for later comments restore process
     _copy ${yaml_file} ${yaml_orig}
     # Create JSON temporary files from YAML original ones
@@ -329,7 +337,7 @@ else
 
     if [ ! -f "${def_composer}" ]
     then
-        _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${def_composer}" "${yaml_file}"
+        _debug "No ${bold}%s${reset} nor ${bold}%s${reset} file found here." "${def_composer}" "${yaml_file}"
     fi
 fi
 
