@@ -2,7 +2,7 @@
 #
 # This file is part of the Offenbach Project
 #
-# (c) 2019-2021 Yannoff (https://github.com/yannoff)
+# (c) 2019-2022 Yannoff (https://github.com/yannoff)
 #
 # @project  Offenbach
 # @author   Yannoff (https://github.com/yannoff)
@@ -16,11 +16,19 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.5.3
-offenbach_build_date=2021-11-23T19:35:02+01:00
+offenbach_build_version=1.6.0
+offenbach_build_date=2022-01-11T18:47:37+01:00
 
 yamltools=yamltools
 composer=composer
+
+# Terminal color & style modifiers
+# The "escape" notation have been preferred to the ASCII one,
+# to provide support for the heredoc text blocks
+blue="[01;34m"
+grey="[01;30m"
+bold="[01m"
+reset="[00m"
 
 #
 # If verbosity is set, print formatted message preprended with app name
@@ -45,7 +53,7 @@ _exec(){
     [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && _debug "${cmd}"
     output="$(${cmd} 2>&1)"
     status=$?
-    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && echo -e "\033[01;30m${output}\033[00m" >&2
+    [ "${verbosity}" = "-vv" -o "${verbosity}" = "-vvv" ] && echo -e "${grey}${output}${reset}" >&2
     return ${status}
 }
 
@@ -140,22 +148,108 @@ EOS
 _list_commands(){
     cat <<EOH
 
-[01;34mOffenbach commands:[00m
-  [01mmigrate[00m              Migrate an existing Composer project to the offenbach structure.
+${blue}Offenbach commands:${reset}
+  ${bold}migrate${reset}              Migrate an existing Composer project to the offenbach structure.
 EOH
+}
+
+#
+# Print help message
+# Print offenbach specific command help if appropriate, fallback to composer help otherwise
+# @param $command The command name
+#
+_help(){
+    case ${1} in
+        self-update|selfupdate)
+            cat <<EOH
+${blue}Usage:${reset}
+  ${bold}self-update${reset} [<version>]
+  ${bold}selfupdate${reset} [<version>]
+
+${blue}Arguments:${reset}
+  ${bold}version${reset}          Optional ${bold}exact${reset} version to update to (eg: ${bold}1.5.3${reset})
+
+${blue}Help:${reset}
+  Upgrade ${bold}offenbach${reset} to the given version.
+  If no version specified, the ${bold}latest${reset} release will be installed.
+EOH
+        ;;
+
+        *)
+            ${composer} ${verbosity} help "$@"
+        ;;
+    esac
+    return $?
 }
 
 #
 # Migrate initial JSON files to their YAML counterparts
 #
 _migrate(){
-    printf "Converting: \033[01m%s\033[00m => \033[01m%s\033[00m \n" ${def_composer} ${yaml_file}
+    printf "Converting: ${bold}%s${reset} => ${bold}%s${reset} \n" ${def_composer} ${yaml_file}
     _json2yaml ${def_composer} ${yaml_file} && _remove ${def_composer}
-    printf "Converting: \033[01m%s\033[00m => \033[01m%s\033[00m \n" ${def_lockfile} ${lock_file}
+    printf "Converting: ${bold}%s${reset} => ${bold}%s${reset} \n" ${def_lockfile} ${lock_file}
     _json2yaml ${def_lockfile} ${lock_file} && _remove ${def_lockfile}
     # Since this is a migration, this is de-facto a first-run
     _add_header ${yaml_file}
     _add_header ${lock_file}
+}
+
+#
+# Update offenbach version
+# @param $version Optional version (defaults to "latest")
+#
+_self_update(){
+    local installer filename installdir logfile output status version=${1:-latest}
+    printf "Updating offenbach script to version: ${blue}%s${reset}\n\n" "${version}"
+    installer=/tmp/offenbach-installer
+    logfile=/tmp/offenbach-update-$(date +"%Y%m%d%H%M").log
+    filename=$(basename ${0})
+    _debug "Offenbach executable filename: %s" "${filename}"
+    installdir=$(dirname $(which ${filename}))
+    _debug "Offenbach executable install dir: %s" "${installdir}"
+    rollback=$($0 --version | awk '(NR == 1) { print $3; }' | _logify)
+    _debug "Current installed version: %s" "${rollback}"
+    curl -Lso ${installer} https://github.com/yannoff/offenbach/releases/latest/download/install.sh
+    chmod +x ${installer}
+    _debug "Executing: ${installer} --filename=${filename} --install-dir=${installdir} --version=${version} 2>&1"
+    output=$(${installer} --filename=${filename} --install-dir=${installdir} --version=${version} 2>&1)
+    status=$?
+    echo -e "${output}" | _logify >${logfile}
+    rm ${installer}
+
+    printf "Update complete: ${blue}%s${reset}\n\n" "$(${filename} --version | head -1 | _logify)"
+    printf "A full log has been saved to: ${bold}%s${reset}\n\n" "${logfile}"
+    printf "Use ${bold}%s${reset} to rollback to version ${blue}%s${reset}\n" "${filename} self-update ${rollback}" "${rollback}"
+    return ${status}
+}
+
+#
+# Sanitize the standard input by removing control chars
+#
+_logify(){
+    php -r '
+        $contents = file_get_contents("php://stdin");
+
+        // First, suppress carriage return chars
+        $contents = str_replace("", chr(10), $contents);
+
+        // Remove all terminal color control chars
+        $contents = str_split($contents);
+        $contents = array_filter($contents, static function($c) {
+            static $skip = false;
+            if (ord($c) == 27) {
+                $skip = true;
+            }
+            if ($skip) {
+                if ($c == "m") {
+                    $skip = false;
+                }
+                return false;
+            }
+            return true;
+        });
+        echo implode("", $contents);'
 }
 
 #
@@ -172,7 +266,7 @@ _get_cwd(){
     # Eliminate options from command line arguments
     for arg
     do
-        _debug "Processing arg: \033[01m%s\033[00m" "${arg}"
+        _debug "Processing arg: ${bold}%s${reset}" "${arg}"
         case ${arg} in
             -*)
             shift 1
@@ -184,13 +278,13 @@ _get_cwd(){
     # If the project directory argument was supplied, use it
     if [ -d "${2}" ]
     then
-        _debug "Use project directory: \033[01m%s\033[00m" "${2}"
+        _debug "Use project directory: ${bold}%s${reset}" "${2}"
         echo "${2}"
         return 0
     fi
 
     # Fallback to the package name (without vendor) as default dir otherwise
-    _debug "No user-defined directory, using package name: \033[01m%s\033[00m" "${1}"
+    _debug "No user-defined directory, using package name: ${bold}%s${reset}" "${1}"
     echo "${1##*/}"
     return 0
 }
@@ -200,7 +294,7 @@ _get_cwd(){
 # @param $dir The directory
 #
 _chdir(){
-    _debug "Changing working directory to: \033[01m%s\033[00m" "$1"
+    _debug "Changing working directory to: ${bold}%s${reset}" "$1"
     cd "$1"
     _debug "CWD: %s" $PWD
 }
@@ -250,7 +344,7 @@ env_composer=`printenv COMPOSER`
 if [ -n "${env_composer}" ]
 then
 
-    _debug "Found a \033[01m%s\033[00m env variable set (value: \033[01m%s\033[00m)" COMPOSER "${env_composer}"
+    _debug "Found a ${bold}%s${reset} env variable set (value: ${bold}%s${reset})" COMPOSER "${env_composer}"
 
     # If the extension is .yaml it refers to an offenbach file
     # => Use the environment COMPOSER name for yaml_file, and use the extension for all offenbach files
@@ -260,12 +354,12 @@ then
     # Restrict allowed extensions to *.json and *.yaml
     if [ "${ext}" != "yaml" ] && [ "${ext}" != "json" ]
     then
-        printf "Error: Only \033[01m*.json\033[00m or \033[01m*.yaml\033[00m are allowed for \033[01mCOMPOSER\033[00m.\n"
+        printf "Error: Only ${bold}*.json${reset} or ${bold}*.yaml${reset} are allowed for ${bold}COMPOSER${reset}.\n"
         printf "Exiting.\n"
         exit 2
     fi
 else
-    _debug "No \033[01mCOMPOSER\033[00m env variable set, falling back to default names"
+    _debug "No ${bold}COMPOSER${reset} env variable set, falling back to default names"
 fi
 
 # Build all filenames from what was deduced in the upper block
@@ -276,38 +370,61 @@ lock_file=${base}-lock.yaml
 def_composer=${base}.json
 def_lockfile=${base}.lock
 
-_debug "Using \033[01m%s\033[00m for the dependency file name" ${yaml_file}
+_debug "Using ${bold}%s${reset} for the dependency file name" ${yaml_file}
 
 # Process special commands
 # Some commands don't need to load composer.json & composer.lock files
 case $1 in
         about)
-            printf "\033[01m%s\033[00m - \033[01m%s\033[00m\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
+            printf "${bold}%s${reset} - ${bold}%s${reset}\n" ${offenbach_name} "Overlay script providing support for composer.yaml files"
             ${composer} ${verbosity} "$@"
             exit $?
             ;;
         create-project)
-            _debug "Executing command: \033[01m%s\033[00m" "${composer} $*"
+            _debug "Executing command: ${bold}%s${reset}" "${composer} $*"
             ${composer} ${verbosity} "$@" && \
             _chdir $(_get_cwd "$@") && \
             _migrate
             exit $?
             ;;
         --version|list)
-            printf "\033[01m%s\033[00m build: \033[01m%s\033[00m %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
+            printf "${bold}%s${reset} build: ${bold}%s${reset} %s\n" ${offenbach_name} ${offenbach_build_version} "${offenbach_build_date/T/ }"
             ${composer} ${verbosity} "$@"
             [ "$1" == "list" ] && _list_commands
             exit 0
             ;;
         # To avoid unnecessary conversions, handover directly to composer when commands do not involve project files
-        global|--help|help|search|selfupdate|self-update)
+        global|--help|search)
             ${composer} ${verbosity} "$@"
+            exit $?
+            ;;
+        # Help command override: prints a different message for offenbach specific commands
+        help)
+            shift 1
+            _help "$@"
             exit $?
             ;;
         # Offenbach specific commands (no composer call)
         migrate)
             printf "Migrating composer files to their offenbach counterparts...\n"
             _migrate
+            exit $?
+            ;;
+        # Override to the self-update command
+        self-update|selfupdate)
+            if [ "${2}" == "--help" ]
+            then
+                _help ${1}
+                exit 0
+            fi
+            echo "************************************************************************************************"
+            echo "               ${bold}NOTE:${reset} This is the ${blue}offenbach${reset} self-update command"
+            echo
+            echo "                To update ${blue}composer${reset}, use: ${bold}composer self-update${reset}"
+            echo "************************************************************************************************"
+            echo
+            shift 1
+            _self_update "$@"
             exit $?
             ;;
 esac
@@ -318,7 +435,7 @@ esac
 # - otherwise, assume this is the first time offenbach is run
 if [ -f "${yaml_file}" ]
 then
-    _debug "Found a \033[01m%s\033[00m file. Converting to JSON..." "${yaml_file}"
+    _debug "Found a ${bold}%s${reset} file. Converting to JSON..." "${yaml_file}"
     # Keep a copy of the original composer.yaml, for later comments restore process
     _copy ${yaml_file} ${yaml_orig}
     # Create JSON temporary files from YAML original ones
@@ -329,7 +446,7 @@ else
 
     if [ ! -f "${def_composer}" ]
     then
-        _debug "No \033[01m%s\033[00m nor \033[01m%s\033[00m file found here." "${def_composer}" "${yaml_file}"
+        _debug "No ${bold}%s${reset} nor ${bold}%s${reset} file found here." "${def_composer}" "${yaml_file}"
     fi
 fi
 
