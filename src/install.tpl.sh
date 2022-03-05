@@ -226,7 +226,7 @@ then
 fi
 
 # If yamltools binary is missing, download it
-yamltools_version=1.4.4
+yamltools_version=@@yamltools_version@@
 if ! _check yamltools ${yamltools_version}
 then
     [ -d "$HOME/bin" ] && bindir=$HOME/bin || bindir=/usr/bin
