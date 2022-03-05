@@ -160,7 +160,7 @@ _usage() {
 [01mUsage:[00m
     $0 [--install-dir=<dir>] [--filename=<name>] [--version=<version>]
 [01mOptions:[00m
-    --install-dir The script installation dir (defaults to: [01m\$HOME/bin[00m)
+    --install-dir The script installation dir (defaults to: [01m\$PWD[00m)
     --filename    The name of the executable (defaults to: [01moffenbach[00m)
     --version     The version to install (defaults to: [01mlatest[00m)
 EOH
