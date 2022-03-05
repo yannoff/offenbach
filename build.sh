@@ -19,6 +19,7 @@
 name=${OFF_BIN:-offenbach}
 srcdir=src
 builddir=bin
+depfile=dependencies.yaml
 
 _msg(){
     local fmt=$1"\n"
@@ -63,6 +64,9 @@ fi
 cp ${srcdir}/${name} ${builddir}/${name}
 sed -i "s/@@version@@/${version}/" ${builddir}/${name}
 sed -i "s/@@date@@/${build_date}/" ${builddir}/${name}
+
+# Build online installer script
+sed "s/@@yamltools_version@@/$(awk -F ': ' '($1 == "yamltools") { print $2; }' ${depfile} | tr -d ' ')/" ${srcdir}/install.tpl.sh > install.sh
 
 # Update README's release badge version number
 sed -i "s#https://img.shields.io/badge/Release-\([0-9]\+.[0-9]\+.[0-9]\+\)-blue#https://img.shields.io/badge/Release-${version}-blue#" README.md

@@ -17,14 +17,18 @@
 #
 
 bindir=$1
+depfile=dependencies.yaml
 
-echo -n "-- checking wether yamltools are installed... " >&2
+echo -n "-- checking whether yamltools are installed... " >&2
 
-if [ -n "`which yamltools`" ]
+required=$(awk -F ': ' '($1 == "yamltools") { print $2; }' ${depfile} | tr -d ' ')
+installed=$(yamltools --version --raw 2>/dev/null)
+
+if [ -z "${installed}" ] || [ ! "${installed//./}" -ge "${required//./}" ]
 then
-    echo "yes" >&2
-else
-    printf "no\n%s\n" "+ including download task in Makefile." >&2
-    printf "\tcurl -Lo %s/yamltools https://github.com/yannoff/yamltools/releases/latest/download/yamltools\n" ${bindir} >&1
+    printf "not installed or version requirement not met\n%s\n" "+ including download task in Makefile." >&2
+    printf "\tcurl -Lo %s/yamltools https://github.com/yannoff/yamltools/releases/download/${required}/yamltools\n" ${bindir} >&1
     printf "\tchmod +x %s/yamltools\n" ${bindir} >&1
+else
+    echo "yes - version ${installed}" >&2
 fi
