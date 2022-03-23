@@ -17,6 +17,210 @@ This project was initiated to address the [lack of support](https://github.com/c
 - It's **human-readable**.<br/>
 _Ever struggled with a merge conflict on a `composer.lock` file? Tough huh?_
 
+<details>
+<summary>
+    <i>A concrete example: the <a target="_blank" href="https://github.com/yannoff/yamltools/blob/1.4.5/composer-lock.yaml">yamltools lock file</a>.</i>
+</summary>
+<br/>
+
+```yaml
+#
+# This file was generated automatically by Offenbach
+# @see https://github.com/yannoff/offenbach for details
+#
+_readme:
+    - 'This file locks the dependencies of your project to a known state'
+    - 'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies'
+    - 'This file is @generated automatically'
+content-hash: bbb0e45340feb244228603615130c04f
+packages:
+    -
+        name: symfony/polyfill-ctype
+        version: v1.19.0
+        source:
+            type: git
+            url: 'https://github.com/symfony/polyfill-ctype.git'
+            reference: aed596913b70fae57be53d86faa2e9ef85a2297b
+        dist:
+            type: zip
+            url: 'https://api.github.com/repos/symfony/polyfill-ctype/zipball/aed596913b70fae57be53d86faa2e9ef85a2297b'
+            reference: aed596913b70fae57be53d86faa2e9ef85a2297b
+            shasum: ''
+        require:
+            php: '>=5.3.3'
+        suggest:
+            ext-ctype: 'For best performance'
+        type: library
+        extra:
+            branch-alias:
+                dev-main: 1.19-dev
+            thanks:
+                name: symfony/polyfill
+                url: 'https://github.com/symfony/polyfill'
+        autoload:
+            psr-4:
+                Symfony\Polyfill\Ctype\: ''
+            files:
+                - bootstrap.php
+        notification-url: 'https://packagist.org/downloads/'
+        license:
+            - MIT
+        authors:
+            -
+                name: 'Gert de Pagter'
+                email: BackEndTea@gmail.com
+            -
+                name: 'Symfony Community'
+                homepage: 'https://symfony.com/contributors'
+        description: 'Symfony polyfill for ctype functions'
+        homepage: 'https://symfony.com'
+        keywords:
+            - compatibility
+            - ctype
+            - polyfill
+            - portable
+        support:
+            source: 'https://github.com/symfony/polyfill-ctype/tree/v1.19.0'
+        funding:
+            -
+                url: 'https://symfony.com/sponsor'
+                type: custom
+            -
+                url: 'https://github.com/fabpot'
+                type: github
+            -
+                url: 'https://tidelift.com/funding/github/packagist/symfony/symfony'
+                type: tidelift
+        time: '2020-10-23T09:01:57+00:00'
+    -
+        name: symfony/yaml
+        version: v3.4.47
+        source:
+            type: git
+            url: 'https://github.com/symfony/yaml.git'
+            reference: 88289caa3c166321883f67fe5130188ebbb47094
+        dist:
+            type: zip
+            url: 'https://api.github.com/repos/symfony/yaml/zipball/88289caa3c166321883f67fe5130188ebbb47094'
+            reference: 88289caa3c166321883f67fe5130188ebbb47094
+            shasum: ''
+        require:
+            php: ^5.5.9|>=7.0.8
+            symfony/polyfill-ctype: ~1.8
+        conflict:
+            symfony/console: '<3.4'
+        require-dev:
+            symfony/console: ~3.4|~4.0
+        suggest:
+            symfony/console: 'For validating YAML files using the lint command'
+        type: library
+        autoload:
+            psr-4:
+                Symfony\Component\Yaml\: ''
+            exclude-from-classmap:
+                - /Tests/
+        notification-url: 'https://packagist.org/downloads/'
+        license:
+            - MIT
+        authors:
+            -
+                name: 'Fabien Potencier'
+                email: fabien@symfony.com
+            -
+                name: 'Symfony Community'
+                homepage: 'https://symfony.com/contributors'
+        description: 'Symfony Yaml Component'
+        homepage: 'https://symfony.com'
+        support:
+            source: 'https://github.com/symfony/yaml/tree/v3.4.47'
+        funding:
+            -
+                url: 'https://symfony.com/sponsor'
+                type: custom
+            -
+                url: 'https://github.com/fabpot'
+                type: github
+            -
+                url: 'https://tidelift.com/funding/github/packagist/symfony/symfony'
+                type: tidelift
+        time: '2020-10-24T10:57:07+00:00'
+    -
+        name: yannoff/console
+        version: 1.3.1
+        source:
+            type: git
+            url: 'https://github.com/yannoff/console.git'
+            reference: a81ecb24f9466684636eea4133e7c7959979220f
+        dist:
+            type: zip
+            url: 'https://api.github.com/repos/yannoff/console/zipball/a81ecb24f9466684636eea4133e7c7959979220f'
+            reference: a81ecb24f9466684636eea4133e7c7959979220f
+            shasum: ''
+        type: library
+        autoload:
+            psr-4:
+                Yannoff\Component\Console\: src/
+        notification-url: 'https://packagist.org/downloads/'
+        license:
+            - MIT
+        authors:
+            -
+                name: Yannoff
+                homepage: 'https://github.com/yannoff'
+        description: 'A simple, lightweight console implementation for command-line PHP applications.'
+        homepage: 'https://github.com/yannoff/console'
+        support:
+            issues: 'https://github.com/yannoff/console/issues'
+            source: 'https://github.com/yannoff/console/tree/1.3.1'
+        time: '2022-02-22T18:59:49+00:00'
+    -
+        name: yannoff/y-a-m-l
+        version: 1.1.5
+        source:
+            type: git
+            url: 'https://github.com/yannoff/y-a-m-l.git'
+            reference: 78d0dd8e0f81056ba3ed04ac6b825c3464e8fcae
+        dist:
+            type: zip
+            url: 'https://api.github.com/repos/yannoff/y-a-m-l/zipball/78d0dd8e0f81056ba3ed04ac6b825c3464e8fcae'
+            reference: 78d0dd8e0f81056ba3ed04ac6b825c3464e8fcae
+            shasum: ''
+        require:
+            ext-json: '*'
+        require-dev:
+            squizlabs/php_codesniffer: ^3.4
+        type: php-library
+        autoload:
+            psr-4:
+                Yannoff\Component\YAML\: src
+        notification-url: 'https://packagist.org/downloads/'
+        license:
+            - MIT
+        authors:
+            -
+                name: Yannoff
+                homepage: 'https://github.com/yannoff'
+        description: 'Y.A.M.L : Yaml Abstraction Model Layer'
+        homepage: 'https://github.com/yannoff/y-a-m-l'
+        support:
+            issues: 'https://github.com/yannoff/y-a-m-l/issues'
+            source: 'https://github.com/yannoff/y-a-m-l/tree/1.1.5'
+        time: '2021-09-12T13:59:09+00:00'
+packages-dev: []
+aliases: []
+minimum-stability: stable
+stability-flags: []
+prefer-stable: false
+prefer-lowest: false
+platform:
+    php: '>=5.6.40'
+    ext-json: '*'
+platform-dev: []
+plugin-api-version: 2.2.0
+```
+<br/>
+</details>
+
 ## Requirements
 - [PHP](https://www.php.net/)
 - [composer](https://getcomposer.org/)
