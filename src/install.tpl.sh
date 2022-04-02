@@ -16,10 +16,10 @@
 # software sources.
 #
 
-# Defaults
-install_dir=${PWD}
-exe_version=latest
-executable=offenbach
+# Defaults: use env variables if defined, fallback values otherwise
+[ -z "${OFFENBACH_INSTALL_DIR}" ] && install_dir=${PWD} ||  install_dir=${OFFENBACH_INSTALL_DIR}
+exe_version=${OFFENBACH_VERSION:-latest}
+executable=${OFFENBACH_FILENAME:-offenbach}
 
 #
 # Download the given executable to the global $install_dir directory

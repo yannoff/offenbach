@@ -235,37 +235,44 @@ plugin-api-version: 2.2.0
 
 ### Option A: Using the online installer script
 
-_The script may be executed on-the-fly, from the target install directory:_
+The script can be executed on-the-fly, from the target install directory:
 
 ```bash
 curl -L -s -o - https://github.com/yannoff/offenbach/releases/latest/download/install.sh | bash
 ```
 
-_Or downloaded for a more fine-tuned install:_
+_See the [examples](#config-examples) section for customized installation examples._
+
+
+#### Installer options & corresponding env vars
+
+_The online installer script supports a few configuration options allowing for a more fine-tuned installation._
+
+Option | Default | Description | Env var
+--- | --- | --- | ---
+`--install-dir` | `$PWD` <br/>_(ie: current directory)_ | Offenbach installation directory **<sup>(3)</sup> <sup>(4)</sup>** | `OFFENBACH_INSTALL_DIR`
+`--filename` | `offenbach` | Name of the installed executable | `OFFENBACH_FILENAME`
+`--version` | `latest` | Alternative version to install | `OFFENBACH_VERSION`
+
+
+> **<sup>(3)</sup>** _For `offenbach` to be accessible globally, the install dir **must be** in the `$PATH` system-wide variable._<br/>
+> **<sup>(4)</sup>** _The script may be invoked in `sudo` mode if the install dir is not owned by the standard user._<br/>
+
+#### Config examples
+
+##### Example using command-line options:
 
 ```bash
-curl -L -o /tmp/install.sh https://github.com/yannoff/offenbach/releases/latest/download/install.sh
+curl -SL -o /tmp/install.sh https://github.com/yannoff/offenbach/releases/latest/download/install.sh
 sudo /tmp/install.sh --install-dir=/usr/local/bin --filename=offenbach
 ```
 
-### Installer options:
+##### Example using env variables:
 
-#### `--install-dir` 
-_Offenbach installation directory **<sup>(3)</sup> <sup>(4)</sup>**_<br/>
-_By defaults, the install script will download Offenbach in the current directory._
-
-> **<sup>(3)</sup>** _To allow calling `offenbach` from anywhere, the install dir **must be** included in the `$PATH` system-wide variable._<br/>
-> **<sup>(4)</sup>** _The script may be invoked in `sudo` mode if the install dir is not owned by the standard user._<br/>
-
-
-#### `--filename`
-_Alternative name for the offenbach executable._
-
-
-#### `--version`
-_Alternative offenbach version to install._<br/>
-_By defaults, the install script will download the latest release version._
-
+```bash
+url=https://github.com/yannoff/offenbach/releases/latest/download/install.sh
+curl -SL -s -o - ${url} | env OFFENBACH_INSTALL_DIR=$HOME/bin OFFENBACH_VERSION=1.6.1 bash
+```
 
 ### Option B: Installing from sources
 
