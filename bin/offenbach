@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.6.2
-offenbach_build_date=2022-04-02T14:04:00+02:00
+offenbach_build_version=1.6.3
+offenbach_build_date=2022-04-12T21:47:36+02:00
 
 yamltools=yamltools
 composer=composer
@@ -154,12 +154,36 @@ EOH
 }
 
 #
+# Check whether the given offenbach/composer command exists
+# @param $command The command name
+#
+_is_command(){
+    local c=$1
+    for f in migrate $(composer list --raw | awk '{ print $1; }' | xargs)
+    do
+        [ "$c" = "$f" ] && return 0
+    done
+    return 1
+}
+
+#
 # Print help message
 # Print offenbach specific command help if appropriate, fallback to composer help otherwise
 # @param $command The command name
 #
 _help(){
     case ${1} in
+        migrate)
+            cat <<EOH
+${blue}Usage:${reset}
+  ${bold}migrate${reset}
+
+${blue}Help:${reset}
+  Migrate an existing project from composer to offenbach.
+  In other words, replace the ${bold}composer.json${reset} and ${bold}composer.lock${reset} by their ${bold}composer.yaml${reset} and ${bold}composer-lock.yaml${reset} counterparts.
+EOH
+        ;;
+
         self-update|selfupdate)
             cat <<EOH
 ${blue}Usage:${reset}
@@ -328,6 +352,17 @@ done
 
 set -- "${args[@]}"
 
+# If the queried command is unknown, exit with an error message
+# Switches (ie --version or --help) are excluded from this check
+if ! [ "${1#-}" != "$1" ]
+then
+    if ! _is_command "$1"
+    then
+        printf "Error: unknown %s command, exiting.\n" "$1"
+        exit 127
+    fi
+fi
+
 # If a working dir was supplied, change dir for it
 [ -n "${cwd}" ] && _chdir ${cwd}
 
@@ -406,6 +441,11 @@ case $1 in
             ;;
         # Offenbach specific commands (no composer call)
         migrate)
+            if [ "${2}" == "--help" ]
+            then
+                _help ${1}
+                exit 0
+            fi
             printf "Migrating composer files to their offenbach counterparts...\n"
             _migrate
             exit $?
