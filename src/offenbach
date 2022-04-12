@@ -173,6 +173,17 @@ _is_command(){
 #
 _help(){
     case ${1} in
+        migrate)
+            cat <<EOH
+${blue}Usage:${reset}
+  ${bold}migrate${reset}
+
+${blue}Help:${reset}
+  Migrate an existing project from composer to offenbach.
+  In other words, replace the ${bold}composer.json${reset} and ${bold}composer.lock${reset} by their ${bold}composer.yaml${reset} and ${bold}composer-lock.yaml${reset} counterparts.
+EOH
+        ;;
+
         self-update|selfupdate)
             cat <<EOH
 ${blue}Usage:${reset}
@@ -426,6 +437,11 @@ case $1 in
             ;;
         # Offenbach specific commands (no composer call)
         migrate)
+            if [ "${2}" == "--help" ]
+            then
+                _help ${1}
+                exit 0
+            fi
             printf "Migrating composer files to their offenbach counterparts...\n"
             _migrate
             exit $?
