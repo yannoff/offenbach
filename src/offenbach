@@ -353,10 +353,14 @@ done
 set -- "${args[@]}"
 
 # If the queried command is unknown, exit with an error message
-if ! _is_command "$1"
+# Switches (ie --version or --help) are excluded from this check
+if ! [ "${1#-}" != "$1" ]
 then
-    printf "Error: unknown %s command, exiting.\n" "$1"
-    exit 127
+    if ! _is_command "$1"
+    then
+        printf "Error: unknown %s command, exiting.\n" "$1"
+        exit 127
+    fi
 fi
 
 # If a working dir was supplied, change dir for it
