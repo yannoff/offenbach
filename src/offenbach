@@ -429,7 +429,7 @@ case $1 in
             exit 0
             ;;
         # To avoid unnecessary conversions, handover directly to composer when commands do not involve project files
-        global|--help|search)
+        cc|clearcache|clear-cache|global|--help|search)
             ${composer} ${verbosity} "$@"
             exit $?
             ;;
