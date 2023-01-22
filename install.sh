@@ -4,7 +4,7 @@
 #
 # This file is part of the Offenbach Project
 #
-# (c) 2019-2022 Yannoff (https://github.com/yannoff)
+# (c) 2019-2023 Yannoff (https://github.com/yannoff)
 #
 # @project  Offenbach
 # @author   Yannoff (https://github.com/yannoff)
@@ -226,7 +226,7 @@ then
 fi
 
 # If yamltools binary is missing, download it
-yamltools_version=1.4.6
+yamltools_version=1.4.7
 if ! _check yamltools ${yamltools_version}
 then
     [ -d "$HOME/bin" ] && bindir=$HOME/bin || bindir=/usr/bin

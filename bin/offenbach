@@ -2,7 +2,7 @@
 #
 # This file is part of the Offenbach Project
 #
-# (c) 2019-2022 Yannoff (https://github.com/yannoff)
+# (c) 2019-2023 Yannoff (https://github.com/yannoff)
 #
 # @project  Offenbach
 # @author   Yannoff (https://github.com/yannoff)
@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.6.3
-offenbach_build_date=2022-04-12T21:47:36+02:00
+offenbach_build_version=1.6.4
+offenbach_build_date=2023-01-22T14:56:50+01:00
 
 yamltools=yamltools
 composer=composer
@@ -429,7 +429,7 @@ case $1 in
             exit 0
             ;;
         # To avoid unnecessary conversions, handover directly to composer when commands do not involve project files
-        global|--help|search)
+        cc|clearcache|clear-cache|global|--help|search)
             ${composer} ${verbosity} "$@"
             exit $?
             ;;
