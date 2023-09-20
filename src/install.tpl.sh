@@ -125,7 +125,7 @@ _get_version(){
             version=$(curl --version 2>/dev/null | awk '(NR==1) { print $2; }')
             ;;
         yamltools)
-            version=$(yamltools --version --raw 2>/dev/null)
+            version=$(yamltools --version --raw 2>/dev/null | tr -d "\n\t\r")
             ;;
         *)
             version=$(${1} --version | head -1 | tr -d "[a-z ]")
