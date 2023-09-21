@@ -135,6 +135,27 @@ _get_version(){
 }
 
 #
+# Give the version a canonical form suitable for comparison
+# Examples:
+#       _canonize 1.4.27 => 1004027
+#       _canonize 1.6.1  => 1006001
+#
+# Usage: _canonize <version>
+#
+# @param $version The semver version number (X.Y.Z)
+#
+_canonize(){
+    local version=${1} canonical=0 iter=1
+    for v in $(echo "${version}" | awk -F "." '{ for(i=1;i<=NF;i++) print $i; }' | tac)
+    do
+        let canonical=canonical+v*iter
+        let iter*=1000
+    done
+
+    echo ${canonical}
+}
+
+#
 # Check whether the given executable is installed, optionally checking for the given minimum version requirement
 #
 # Usage: _check <executable> [<min-version>]
@@ -143,7 +164,7 @@ _get_version(){
 # @param $min-version Optional minimal required version
 #
 _check(){
-    local msg
+    local msg version actual minimum
     msg="Checking whether %s is installed..."
     version=$(_get_version ${1})
     
@@ -151,7 +172,9 @@ _check(){
     then
         if [ -n "${2}" ]
         then
-            if [ ! "${version//./}" -ge "${2//./}" ]
+            actual=$(_canonize "${version}")
+            minimum=$(_canonize "${2}")
+            if [ "${actual}" -lt "${minimum}" ]
             then
                 _debug "${msg} - version requirement unmet (%s < %s)" "${1}" "${version}" "${2}"
                 return 127
