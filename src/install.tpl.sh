@@ -28,7 +28,7 @@ executable=${OFFENBACH_FILENAME:-offenbach}
 #
 # @param $project The github repository name
 # @param $version The version to download (defaults to "latest")
-# @param $exe     The final executable name (defaults to $asset)
+# @param $exe     The final executable filepath (defaults to $asset)
 # @param $asset   Name of the release asset to download (defaults to $project)
 #
 # @global $install_dir Directory where the executable will reside
@@ -156,6 +156,26 @@ _canonize(){
 }
 
 #
+# Get the install dir of a given dependency
+# If not installed yet, fallback to $HOME/bin if it exists, /usr/bin otherwise
+#
+# Usage: _get_install_dir <dependency>
+#
+# @param $dependency The dependency basename
+#
+_get_install_dir(){
+    local bindir dependency=${1}
+    deppath=$(which ${dependency})
+    if [ -z "${deppath}" ]
+    then
+         [ -d "$HOME/bin" ] && bindir=$HOME/bin || bindir=/usr/bin
+    else
+        bindir=$(dirname ${deppath})
+    fi
+    echo "${bindir}"
+}
+
+#
 # Check whether the given executable is installed, optionally checking for the given minimum version requirement
 #
 # Usage: _check <executable> [<min-version>]
@@ -252,7 +272,7 @@ fi
 yamltools_version=@@yamltools_version@@
 if ! _check yamltools ${yamltools_version}
 then
-    [ -d "$HOME/bin" ] && bindir=$HOME/bin || bindir=/usr/bin
+    bindir=$(_get_install_dir yamltools)
     _download yamltools ${yamltools_version} ${bindir}/yamltools
 fi
 
