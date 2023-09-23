@@ -28,7 +28,7 @@ executable=${OFFENBACH_FILENAME:-offenbach}
 #
 # @param $project The github repository name
 # @param $version The version to download (defaults to "latest")
-# @param $exe     The final executable name (defaults to $asset)
+# @param $exe     The final executable filepath (defaults to $asset)
 # @param $asset   Name of the release asset to download (defaults to $project)
 #
 # @global $install_dir Directory where the executable will reside
@@ -125,13 +125,54 @@ _get_version(){
             version=$(curl --version 2>/dev/null | awk '(NR==1) { print $2; }')
             ;;
         yamltools)
-            version=$(yamltools --version --raw 2>/dev/null)
+            version=$(yamltools --version --raw 2>/dev/null | tr -d "\n\t\r")
             ;;
         *)
             version=$(${1} --version | head -1 | tr -d "[a-z ]")
             ;;
     esac
     echo ${version}
+}
+
+#
+# Give the version a canonical form suitable for comparison
+# Examples:
+#       _canonize 1.4.27 => 1004027
+#       _canonize 1.6.1  => 1006001
+#
+# Usage: _canonize <version>
+#
+# @param $version The semver version number (X.Y.Z)
+#
+_canonize(){
+    local version=${1} canonical=0 iter=1
+    for v in $(echo "${version}" | awk -F "." '{ for(i=1;i<=NF;i++) print $i; }' | tac)
+    do
+        let canonical=canonical+v*iter
+        let iter*=1000
+    done
+
+    echo ${canonical}
+}
+
+#
+# Get the install dir of a given dependency
+# If not installed yet, fallback to $HOME/bin if it exists, /usr/bin otherwise
+#
+# Usage: _get_install_dir <dependency>
+#
+# @param $dependency The dependency basename
+#
+_get_install_dir(){
+    local bindir dependency=${1}
+    deppath=$(which ${dependency})
+    if [ -z "${deppath}" ]
+    then
+         [ -d "$HOME/bin" ] && bindir=$HOME/bin || bindir=/usr/bin
+    else
+        bindir=$(dirname ${deppath})
+    fi
+    echo "${bindir}"
 }
 
 #
@@ -143,7 +184,7 @@ _get_version(){
 # @param $min-version Optional minimal required version
 #
 _check(){
-    local msg
+    local msg version actual minimum
     msg="Checking whether %s is installed..."
     version=$(_get_version ${1})
     
@@ -151,7 +192,9 @@ _check(){
     then
         if [ -n "${2}" ]
         then
-            if [ ! "${version//./}" -ge "${2//./}" ]
+            actual=$(_canonize "${version}")
+            minimum=$(_canonize "${2}")
+            if [ "${actual}" -lt "${minimum}" ]
             then
                 _debug "${msg} - version requirement unmet (%s < %s)" "${1}" "${version}" "${2}"
                 return 127
@@ -226,10 +269,10 @@ then
 fi
 
 # If yamltools binary is missing, download it
-yamltools_version=1.4.7
+yamltools_version=1.4.8
 if ! _check yamltools ${yamltools_version}
 then
-    [ -d "$HOME/bin" ] && bindir=$HOME/bin || bindir=/usr/bin
+    bindir=$(_get_install_dir yamltools)
     _download yamltools ${yamltools_version} ${bindir}/yamltools
 fi
 
