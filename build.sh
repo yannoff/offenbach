@@ -34,7 +34,7 @@ _err(){
 }
 
 version=$1
-build_date=`date --iso-8601=seconds`
+build_date=`date -Iseconds`
 
 # Check builder was invoked with a version number
 if [ -z "${version}" ]
