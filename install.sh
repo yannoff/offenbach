@@ -269,7 +269,7 @@ then
 fi
 
 # If yamltools binary is missing, download it
-yamltools_version=1.4.8
+yamltools_version=1.5.0
 if ! _check yamltools ${yamltools_version}
 then
     bindir=$(_get_install_dir yamltools)

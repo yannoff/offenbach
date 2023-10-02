@@ -16,8 +16,8 @@
 
 offenbach_name=Offenbach
 offenbach_url=https://github.com/yannoff/offenbach
-offenbach_build_version=1.6.5
-offenbach_build_date=2023-09-23T19:59:57+02:00
+offenbach_build_version=1.7.0
+offenbach_build_date=2023-10-02T19:19:08+02:00
 
 yamltools=yamltools
 composer=composer
