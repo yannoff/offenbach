@@ -1,0 +1,44 @@
+#
+# Offenbach install github action script
+#
+# This file is part of the Offenbach Project
+#
+# (c) 2019-2024 Yannoff (https://github.com/yannoff)
+#
+# @project  Offenbach
+# @author   Yannoff (https://github.com/yannoff)
+# @link     https://github.com/yannoff/offenbach
+# @license  http://opensource.org/licenses/MIT
+#
+# For the full copyright and license information,
+# please view the LICENSE file bundled with this
+# software sources.
+#
+
+name: Install yamltools & offenbach
+author: Yannoff
+description: Installs yamltools and offenbach dependency manager
+
+inputs:
+    php-version:
+        description: The PHP version to install
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Install PHP
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: ${{ inputs.php-version }}
+              coverage: none
+
+        - name: Download yamltools
+          id: yamltools
+          shell: bash
+          run: curl -SL -O https://github.com/yannoff/yamltools/releases/download/1.5.0/yamltools && chmod +x ./yamltools && mv -v yamltools /usr/local/bin
+
+        - name: Download offenbach
+          id: offenbach
+          shell: bash
+          run: curl -SL -O https://github.com/yannoff/offenbach/releases/download/1.7.0/offenbach && chmod +x ./offenbach && mv -v offenbach /usr/local/bin

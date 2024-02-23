@@ -68,6 +68,12 @@ sed -i "s/@@date@@/${build_date}/" ${builddir}/${name}
 # Build online installer script
 sed "s/@@yamltools_version@@/$(awk -F ': ' '($1 == "yamltools") { print $2; }' ${depfile} | tr -d ' ')/" ${srcdir}/install.tpl.sh > install.sh
 
+# Build github action script
+action=actions/install/action.yaml
+cp ${srcdir}/action.tpl.yaml ${action}
+sed -i "s/@@offenbach_version@@/${version}/" ${action}
+sed -i "s/@@yamltools_version@@/$(awk -F ': ' '($1 == "yamltools") { print $2; }' ${depfile} | tr -d ' ')/" ${action}
+
 # Update README's release badge version number
 sed -i "s#https://img.shields.io/badge/Release-\([0-9]\+.[0-9]\+.[0-9]\+\)-blue#https://img.shields.io/badge/Release-${version}-blue#" README.md
 
