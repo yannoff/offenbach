@@ -41,4 +41,4 @@ runs:
         - name: Download offenbach
           id: offenbach
           shell: bash
-          run: curl -SL -O https://github.com/yannoff/offenbach/releases/download/1.7.0/offenbach && chmod +x ./offenbach && mv -v offenbach /usr/local/bin
+          run: curl -SL -O https://github.com/yannoff/offenbach/releases/download/1.7.1/offenbach && chmod +x ./offenbach && mv -v offenbach /usr/local/bin
