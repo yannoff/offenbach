@@ -4,7 +4,7 @@
 #
 # This file is part of the Offenbach Project
 #
-# (c) 2019-2024 Yannoff (https://github.com/yannoff)
+# (c) 2019-2025 Yannoff (https://github.com/yannoff)
 #
 # @project  Offenbach
 # @author   Yannoff (https://github.com/yannoff)
