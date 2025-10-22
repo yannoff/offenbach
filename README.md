@@ -297,6 +297,38 @@ sudo make install
 > **<sup>(5)</sup>** _The `--help` option will give a thorough overview of the possible customizations._<br/>
 > **<sup>(6)</sup>** _Depending on the install directory set up, `sudo` might not be used._
 
+
+### Github Action
+
+A [github action](actions/install/action.yaml) version of the installer is also available for integration in CI scripts.
+
+The action will install PHP, composer & offenbach.
+
+Synopsis: use `yannoff/offenbach/actions/install@<release>`.
+
+#### Integration example
+
+_Installing offenbach version 1.7.1 / PHP 8.0_
+
+```yaml
+# ...
+jobs:
+    mycijob1:
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install PHP & Offenbach
+              uses: yannoff/offenbach/actions/install@1.7.1
+              with:
+                  php-version: 8.0
+
+            - name: Install dependencies (Offenbach)
+              run: offenbach install
+```
+
+_A concrete working use case can be found in the [phpcc project](https://github.com/yannoff/phpcc/blob/main/.github/workflows/ci.yaml)._ 
+
 ## How it works
 
 
