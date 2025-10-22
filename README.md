@@ -5,6 +5,32 @@ _An overlay script for [composer](https://getcomposer.org/), providing support f
 [![Latest stable release](https://img.shields.io/badge/Release-1.7.1-blue)](https://github.com/yannoff/offenbach/releases/latest "Latest stable release")
 [![MIT License](https://img.shields.io/badge/License-MIT-lightgrey)](https://github.com/yannoff/offenbach/blob/master/LICENSE "MIT License")
 
+## Help contents
+
+- [Purpose](#purpose)
+- [Requirements](#requirements)
+- [Install](#install)
+    - [Option A: Using the online installer script](#option-a-using-the-online-installer-script)
+        - [Installer options & corresponding env vars](#installer-options--corresponding-env-vars)
+        - [Config examples](#config-examples)
+    - [Option B: Installing from sources](#option-b-installing-from-sources)
+    - [Github Action](#github-action)
+        - [Integration example](#integration-example)
+- [How it works](#how-it-works)
+    - [Limitations](#limitations)
+- [Usage](#usage)
+    - [Creating a new project from scratch](#creating-a-new-project-from-scratch)
+    - [Migrating an existing composer project](#migrating-an-existing-composer-project)
+- [Compatibility caveats](#compatibility-caveats)
+    - [Packagist](#packagist)
+    - [PHPStorm](#phpstorm)
+    - [Symfony](#symfony)
+    - [Laravel](#laravel)
+- [Advisory](#advisory)
+- [About the project's name](#about-the-projects-name)
+- [Credits](#credits)
+- [License](#license)
+
 ## Purpose
 
 This project was initiated to address the [lack of support](https://github.com/composer/composer/issues/440) for [YAML](https://yaml.org/) format in [composer](https://github.com/composer/composer).
