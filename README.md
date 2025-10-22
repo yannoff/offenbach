@@ -26,7 +26,6 @@ _An overlay script for [composer](https://getcomposer.org/), providing support f
     - [PHPStorm](#phpstorm)
     - [Symfony](#symfony)
     - [Laravel](#laravel)
-- [Advisory](#advisory)
 - [About the project's name](#about-the-projects-name)
 - [Credits](#credits)
 - [License](#license)
@@ -534,11 +533,6 @@ $app = App\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 ```
-
-
-## Advisory
-The project is still in a **high development phase**. _[Feedbacks](issues) are welcome and encouraged!_
-
 
 ## About the project's name
 
